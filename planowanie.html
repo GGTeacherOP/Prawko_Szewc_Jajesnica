@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Planowanie jazd</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav>
+    <a href="info.html">Info</a>
+    <a href="zajecia_praktyczne.html">Zajęcia praktyczne</a>
+    <a href="planowanie.html">Planowanie zajęć</a>
+    <a href="index.html">Wyloguj</a>
+  </nav>
+  <h2>Wybierz termin jazdy</h2>
+  <form>
+    <label>Data: <input type="date" required></label><br>
+    <label>Godzina:
+      <select required>
+        <option>7:00</option><option>8:00</option><option>9:00</option>
+        <option>10:00</option><option>11:00</option><option>12:00</option>
+        <option>13:00</option><option>14:00</option><option>15:00</option>
+        <option>16:00</option><option>17:00</option>
+      </select>
+    </label><br>
+    <label>Instruktor:
+      <select required>
+        <option>Jan Kowalski</option>
+        <option>Anna Nowak</option>
+      </select>
+    </label><br>
+    <button type="submit">Zaplanuj</button>
+  </form>
+</body>
+</html>
