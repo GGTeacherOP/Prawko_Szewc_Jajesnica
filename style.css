@@ -44,3 +44,34 @@ body {
   .zaplanowana {
     background-color: #f0e68c;
   }
+  #info, #info2{
+    text-align: center;
+  }
+  table{
+    width: 80%;
+    max-width: 900px;
+    border-collapse: collapse;
+    text-align: center;
+    background-color: #e6f0ff;
+    border: 2px solid #3399ff;
+    margin-bottom: 40px;
+  }
+  #tab{
+    background-color: #3399ff;
+    color: white;
+  }
+  #tab2, #tab{
+    border: 1px solid #99ccff;
+    padding: 15px;
+  }
+  img{
+    width: 200px;
+    height: auto;
+    border-radius: 50%;
+    border: 2px solid #3399ff;
+  }
+  #info3{
+    color: #0044cc;
+    margin-top: 40px;
+    text-align: center;
+  }
