@@ -6,11 +6,15 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div id="welcome-popup" class="welcome-popup" style="display: none;"></div>
   <nav>
-    <a href="info.html" id="nav-info">Info</a>
-    <a href="zajecia_praktyczne.html" id="nav-zajecia">Zajęcia praktyczne</a> 
-    <a href="planowanie.html" id="nav-plan">Plan Jazd</a>
-    <a href="index.html" onclick="sessionStorage.clear();">Wyloguj</a> 
+    <a href="planowanie.html" class="logo-link"><img src="logo.png" alt="Logo"></a>
+    <div class="nav-links">
+      <a href="info.html" id="nav-info">Info</a>
+      <a href="zajecia_praktyczne.html" id="nav-zajecia">Zajęcia praktyczne</a> 
+      <a href="planowanie.html" id="nav-plan">Plan Jazd</a>
+      <a href="index.html" onclick="sessionStorage.clear();">Wyloguj</a> 
+    </div>
   </nav>
 
   <div class="container"> 
@@ -24,14 +28,12 @@
             <tr>
               <th>Uczeń</th>
               <th>Data</th>
-              <th>Godzina Od</th>
-              <th>Godzina Do</th>
-              <th>Pojazd</th>
-              <th>Status</th> 
+              <th>Godzina</th>
+              <th>Status</th>
             </tr>
           </thead>
-          <tbody id="instructor-schedule-tbody">
-            <tr><td colspan="6">Ładowanie harmonogramu...</td></tr>
+          <tbody id="instructor-lessons-table">
+            <tr><td colspan="4">Ładowanie harmonogramu...</td></tr>
           </tbody>
         </table>
       </div>
@@ -50,6 +52,7 @@
 
   </div>
 
+  <script src="main.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const userId = sessionStorage.getItem('userId');
@@ -66,9 +69,7 @@
           pageTitle.textContent = 'Harmonogram Instruktora';
           document.getElementById('instructor-name').textContent = userName;
           instructorView.style.display = 'block';
-          document.getElementById('nav-info').style.display = 'none';
-          document.getElementById('nav-zajecia').style.display = 'none';
-          loadInstructorSchedule(userId);
+          // fetchAndDisplayLessons(); // Wywołanie jest już w main.js
         } else if (userRole === 'Uczniem') {
            pageTitle.textContent = 'Informacja dla Ucznia';
           studentView.style.display = 'block';
@@ -80,51 +81,8 @@
       }
     });
 
-    async function loadInstructorSchedule(instructorId) {
-      const tbody = document.getElementById('instructor-schedule-tbody');
-      tbody.innerHTML = '<tr><td colspan="6">Ładowanie harmonogramu...</td></tr>'; 
-
-      try {
-        const response = await fetch('get_instructor_schedule.php', { 
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ instructor_id: instructorId }) 
-        });
-
-        if (!response.ok) {
-          throw new Error(`Błąd serwera: ${response.status}`);
-        }
-
-        const schedule = await response.json();
-
-        if (schedule.status === 'success' && Array.isArray(schedule.data)) {
-          tbody.innerHTML = ''; 
-          if (schedule.data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6">Brak zaplanowanych jazd.</td></tr>';
-          } else {
-            schedule.data.forEach(ride => {
-              const row = tbody.insertRow();
-              row.innerHTML = `
-                <td>${ride.uczen_imie} ${ride.uczen_nazwisko}</td>
-                <td>${ride.data_jazdy}</td>
-                <td>${ride.godzina_od.substring(0, 5)}</td>
-                <td>${ride.godzina_do.substring(0, 5)}</td>
-                <td>${ride.pojazd_rejestracja || '-'}</td>
-                <td>${ride.odbyta ? 'Odbyta' : 'Zaplanowana'}</td> 
-              `;
-            });
-          }
-        } else {
-           tbody.innerHTML = `<tr><td colspan="6">Błąd podczas ładowania harmonogramu: ${schedule.message || 'Nieznany błąd'}</td></tr>`;
-           console.error("Server response error:", schedule.message);
-        }
-      } catch (error) {
-        tbody.innerHTML = `<tr><td colspan="6">Błąd połączenia lub przetwarzania: ${error.message}</td></tr>`;
-        console.error('Error fetching instructor schedule:', error);
-      }
-    }
+    // Logika ładowania harmonogramu instruktora została przeniesiona do main.js (fetchAndDisplayLessons)
+    /* async function loadInstructorSchedule(instructorId) { ... } */
 
     function confirmCancel(button) {
       if (confirm("Czy na pewno chcesz odwołać tę jazdę?")) {
@@ -135,5 +93,21 @@
     }
   </script>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const welcomeMessage = sessionStorage.getItem('welcomeMessage');
+      const popup = document.getElementById('welcome-popup');
+
+      if (welcomeMessage && popup) {
+        popup.textContent = welcomeMessage;
+        popup.style.display = 'block';
+
+        setTimeout(() => {
+          popup.style.display = 'none';
+          sessionStorage.removeItem('welcomeMessage'); // Usuń wiadomość po wyświetleniu
+        }, 3000); // Pokaż przez 3 sekundy
+      }
+    });
+  </script>
 </body>
 </html>

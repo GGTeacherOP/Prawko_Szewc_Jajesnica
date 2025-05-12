@@ -6,51 +6,60 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div id="welcome-popup" class="welcome-popup" style="display: none;"></div>
   <nav>
-    <a href="info.html">Info</a>
-    <a href="zajecia_praktyczne.html">Zajęcia praktyczne</a>
-    <a href="planowanie.html">Planowanie zajęć</a>
-    <a href="index.html">Wyloguj</a>
+    <a href="info.html" class="logo-link"><img src="logo.png" alt="Logo"></a>
+    <div class="nav-links">
+      <a href="info.html">Info</a>
+      <a href="zajecia_praktyczne.html">Zajęcia praktyczne</a>
+      <a href="index.html">Wyloguj</a>
+    </div>
   </nav>
   <h1 id="info">O naszej szkole jazdy</h1>
   <h3 id="info2">Nasza szkoła jazdy oferuje profesjonalne kursy nauki jazdy, elastyczne terminy zajęć oraz doświadczonych instruktorów. Uczymy z pasją!</h3>
   <h2 id="info2">Yo! Szukasz prawka? Trafiłeś/aś w dziesiątkę! 😎 U nas luz, blues i pełen profesjonalizm.<br>Nasi instruktorzy to nie nudziarze – pokażą Ci, jak śmigać po mieście i zdać egzamin za pierwszym razem. Mamy elastyczne godziny, spoko fury i zero stresu. Wbijaj do nas, a prawko będzie Twoje! 🚗💨</h2>
 
-  <section class="container planning-section">
-    <h2>Zaplanuj swoją jazdę</h2>
-    <form id="planning-form">
-      <div class="form-row">
-        <div class="form-group">
-          <label for="instructor">Wybierz instruktora:</label>
-          <select id="instructor" name="instructor" required>
-            <option value="" disabled selected>-- Wybierz --</option>
-            <option value="Muhamed Kebsik">Muhamed Kebsik</option>
-            <option value="Robert Lewandowski">Robert Lewandowski</option>
-            <option value="Konrad McGregor">Konrad McGregor</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="duration">Czas trwania:</label>
-          <select id="duration" name="duration" required>
-            <option value="1">1 godzina</option>
-            <option value="2">2 godziny</option>
-          </select>
-        </div>
-        <div class="form-group">
-            <label for="date">Data:</label>
-            <input type="date" id="date" name="date" required>
-        </div>
-      </div>
-      <button type="button" onclick="showAvailableSlots()">Pokaż dostępne terminy</button>
-    </form>
-    <div id="available-slots" class="slots-container" style="display: none;">
-      <h3>Dostępne terminy:</h3>
-      <div id="slots-list">
-        
-      </div>
+  <!-- NOWA SEKCJA: Kategorie -->
+  <section class="info-section categories-section">
+    <h2>Nasze Kategorie Prawa Jazdy</h2>
+    <div class="categories-list">
+      <div class="category-item">AM</div>
+      <div class="category-item">A1</div>
+      <div class="category-item">A2</div>
+      <div class="category-item">A</div>
+      <div class="category-item">B</div>
     </div>
   </section>
 
+  <!-- NOWA SEKCJA: Dlaczego My? -->
+  <section class="info-section why-us-section">
+    <h2>Dlaczego Warto Wybrać Naszą Szkołę?</h2>
+    <ul>
+      <li><span class="icon">⭐</span> Doświadczeni i cierpliwi instruktorzy z pasją do nauczania.</li>
+      <li><span class="icon">⏰</span> Elastyczne godziny jazd dopasowane do Twojego grafiku.</li>
+      <li><span class="icon">🚗</span> Nowoczesna i zadbana flota pojazdów szkoleniowych.</li>
+      <li><span class="icon">🩺</span> Badania lekarskie przeprowadzane na miejscu – oszczędność czasu!</li>
+      <li><span class="icon">📈</span> Wysoka zdawalność egzaminów państwowych.</li>
+      <li><span class="icon">😊</span> Przyjazna i bezstresowa atmosfera podczas nauki.</li>
+    </ul>
+  </section>
+
+  <!-- NOWA SEKCJA: Opinie -->
+  <section class="info-section testimonials-section">
+    <h2>Co Mówią Nasi Kursanci?</h2>
+    <div class="testimonial">
+      <p>"Świetna szkoła! Instruktor Robert to mistrz cierpliwości. Zdałem za pierwszym razem bez problemu. Polecam!"</p>
+      <span>- Jan Kowalski</span>
+    </div>
+    <div class="testimonial">
+      <p>"Najlepszy wybór w mieście. Elastyczne godziny, super atmosfera i profesjonalne podejście. Instruktor Muhamed potrafi wszystko wytłumaczyć na spokojnie."</p>
+      <span>- Anna Nowak</span>
+    </div>
+    <div class="testimonial">
+      <p>"Badania na miejscu to mega wygoda! Cały kurs przebiegł sprawnie, a instruktor Konrad świetnie przygotował mnie do egzaminu. Polecam w 100%!"</p>
+      <span>- Piotr Wiśniewski</span>
+    </div>
+  </section>
 
   <h2 id="info3">Nasi instruktorzy</h2>
   <table>
@@ -78,5 +87,21 @@
 
   <script src="main.js"></script>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const welcomeMessage = sessionStorage.getItem('welcomeMessage');
+      const popup = document.getElementById('welcome-popup');
+
+      if (welcomeMessage && popup) {
+        popup.textContent = welcomeMessage;
+        popup.style.display = 'block';
+
+        setTimeout(() => {
+          popup.style.display = 'none';
+          sessionStorage.removeItem('welcomeMessage'); // Usuń wiadomość po wyświetleniu
+        }, 3000); // Pokaż przez 3 sekundy
+      }
+    });
+  </script>
 </body>
 </html>

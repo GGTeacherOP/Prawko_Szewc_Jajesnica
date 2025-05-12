@@ -6,11 +6,15 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div id="welcome-popup" class="welcome-popup" style="display: none;"></div>
   <nav>
-    <a href="info.html" id="nav-info">Info</a>
-    <a href="zajecia_praktyczne.html" id="nav-zajecia">Zajęcia praktyczne</a>
-    <a href="planowanie.html" id="nav-plan">Plan Jazd</a>
-    <a href="index.html" onclick="sessionStorage.clear();">Wyloguj</a>
+    <a href="zajecia_praktyczne.html" class="logo-link"><img src="logo.png" alt="Logo"></a>
+    <div class="nav-links">
+      <a href="info.html" id="nav-info">Info</a>
+      <a href="zajecia_praktyczne.html" id="nav-zajecia">Zajęcia praktyczne</a>
+      <a href="planowanie.html" id="nav-plan">Plan Jazd</a>
+      <a href="index.html" onclick="sessionStorage.clear();">Wyloguj</a>
+    </div>
   </nav>
 
   <div class="container">
@@ -20,24 +24,57 @@
       <p style="text-align: center; margin-bottom: 20px;">Witaj <span id="student-name"></span>! Tutaj znajdziesz listę swoich zaplanowanych jazd.</p>
       
       <h2>Twoje zaplanowane jazdy:</h2>
+      <!-- Tabela z istniejącymi jazdami ucznia -->
       <div id="student-schedule-table-container">
         <table>
           <thead>
             <tr>
               <th>Data</th>
-              <th>Godzina Od</th>
-              <th>Godzina Do</th>
+              <th>Godzina</th>
               <th>Instruktor</th>
-              <th>Pojazd</th>
               <th>Status</th>
-              <th>Akcja</th> 
+              <!-- Usunięto niepotrzebne nagłówki, dostosowując do displayStudentLessons -->
             </tr>
           </thead>
-          <tbody id="student-schedule-tbody">
-            <tr><td colspan="7">Ładowanie harmonogramu...</td></tr> 
+          <tbody id="student-lessons-table"> <!-- Zmieniono ID na student-lessons-table -->
+            <tr><td colspan="4">Ładowanie harmonogramu...</td></tr> 
           </tbody>
         </table>
       </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div id="booking-form-container" style="display: none;"> <!-- Ukryty, jeśli student-view nie jest aktywny -->
+        <h2>Zarezerwuj nową jazdę:</h2>
+        <div class="booking-form">
+            <div>
+                <label for="instructor">Instruktor:</label>
+                <select id="instructor" name="instructor">
+                    <option value="">Wybierz instruktora</option>
+                    <option value="Muhamed Kebsik">Muhamed Kebsik</option>
+                    <option value="Robert Lewandowski">Robert Lewandowski</option>
+                    <option value="Konrad McGregor">Konrad McGregor</option>
+                </select>
+            </div>
+            <div>
+                <label for="duration">Czas trwania:</label>
+                <select id="duration" name="duration">
+                    <option value="1">1 godzina</option>
+                    <option value="2">2 godziny</option>
+                </select>
+            </div>
+            <div>
+                <label for="date">Data:</label>
+                <input type="date" id="date" name="date">
+            </div>
+            <button onclick="showAvailableSlots()" class="button-show-slots">Pokaż dostępne terminy</button>
+        </div>
+
+        <div id="available-slots" style="display:none; margin-top: 20px;">
+            <h3>Dostępne terminy:</h3>
+            <div id="slots-list"></div>
+        </div>
     </div>
 
     <div id="unauthorized-view-student" style="display: none;">
@@ -48,6 +85,7 @@
 
   </div>
 
+  <script src="main.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const userId = sessionStorage.getItem('userId');
@@ -63,7 +101,8 @@
           pageTitle.textContent = 'Moje Zajęcia Praktyczne';
           document.getElementById('student-name').textContent = userName;
           studentView.style.display = 'block';
-          loadStudentSchedule(userId);
+          document.getElementById('booking-form-container').style.display = 'block'; // Pokaż formularz rezerwacji
+          // fetchAndDisplayLessons(); // Wywołanie jest już w main.js, więc tu niepotrzebne bezpośrednio
         } else {
           studentView.style.display = 'none';
           unauthorizedView.style.display = 'block';
@@ -74,57 +113,8 @@
       }
     });
 
-    async function loadStudentSchedule(studentId) {
-      const tbody = document.getElementById('student-schedule-tbody');
-      tbody.innerHTML = '<tr><td colspan="7">Ładowanie harmonogramu...</td></tr>';
-
-      try {
-        const response = await fetch('get_student_schedule.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ student_id: studentId })
-        });
-
-        if (!response.ok) {
-          throw new Error(`Błąd serwera: ${response.status}`);
-        }
-
-        const schedule = await response.json();
-
-        if (schedule.status === 'success' && Array.isArray(schedule.data)) {
-          tbody.innerHTML = ''; 
-          if (schedule.data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7">Nie masz jeszcze żadnych zaplanowanych jazd.</td></tr>';
-          } else {
-            schedule.data.forEach(ride => {
-              const row = tbody.insertRow();
-              const isPast = new Date(ride.data_jazdy + 'T' + ride.godzina_od) < new Date();
-              const cancelButton = (ride.odbyta || isPast) 
-                ? '' 
-                : `<button class="cancel-button" onclick="confirmCancel(${ride.jazda_id}, this)">Odwołaj</button>`;
-
-              row.innerHTML = `
-                <td>${ride.data_jazdy}</td>
-                <td>${ride.godzina_od.substring(0, 5)}</td>
-                <td>${ride.godzina_do.substring(0, 5)}</td>
-                <td>${ride.instruktor_imie} ${ride.instruktor_nazwisko}</td>
-                <td>${ride.pojazd_rejestracja || '-'}</td>
-                <td>${ride.odbyta ? 'Odbyta' : 'Zaplanowana'}</td>
-                <td>${cancelButton}</td>
-              `;
-            });
-          }
-        } else {
-           tbody.innerHTML = `<tr><td colspan="7">Błąd podczas ładowania harmonogramu: ${schedule.message || 'Nieznany błąd'}</td></tr>`;
-           console.error("Server response error:", schedule.message);
-        }
-      } catch (error) {
-        tbody.innerHTML = `<tr><td colspan="7">Błąd połączenia lub przetwarzania: ${error.message}</td></tr>`;
-        console.error('Error fetching student schedule:', error);
-      }
-    }
+    // Logika ładowania harmonogramu studenta została przeniesiona do main.js (fetchAndDisplayLessons)
+    /* async function loadStudentSchedule(studentId) { ... } */
 
     async function confirmCancel(rideId, button) {
       if (confirm("Czy na pewno chcesz odwołać tę jazdę?")) {
@@ -137,5 +127,21 @@
 
   </script>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const welcomeMessage = sessionStorage.getItem('welcomeMessage');
+      const popup = document.getElementById('welcome-popup');
+
+      if (welcomeMessage && popup) {
+        popup.textContent = welcomeMessage;
+        popup.style.display = 'block';
+
+        setTimeout(() => {
+          popup.style.display = 'none';
+          sessionStorage.removeItem('welcomeMessage'); // Usuń wiadomość po wyświetleniu
+        }, 3000); // Pokaż przez 3 sekundy
+      }
+    });
+  </script>
 </body>
 </html>

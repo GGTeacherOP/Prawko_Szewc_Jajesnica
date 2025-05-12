@@ -33,6 +33,7 @@ CREATE TABLE pojazdy (
 CREATE TABLE jazdy (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_ucznia INT NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'Zaplanowana',
     id_instruktora INT NOT NULL,
     id_pojazdu INT,
     data_jazdy DATE NOT NULL,

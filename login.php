@@ -3,19 +3,19 @@ header('Content-Type: application/json');
 
 $servername = "localhost"; 
 $username = "root"; 
-$password = ""; 
+$db_password = ""; 
 $dbname = "szkola_jazdy";
 
 $data = json_decode(file_get_contents('php://input'), true);
 $login = $data['login'] ?? null;
-$haslo = $data['haslo'] ?? null;
+$password = $data['password'] ?? null;
 
-if (!$login || !$haslo) {
+if (!$login || !$password) {
     echo json_encode(['status' => 'error', 'message' => 'Nie podano loginu lub hasła']);
     exit;
 }
 
-$conn = new mysqli($servername, $username, $password, $dbname);
+$conn = new mysqli($servername, $username, $db_password, $dbname);
 
 if ($conn->connect_error) {
     echo json_encode(['status' => 'error', 'message' => 'Błąd połączenia z bazą danych: ' . $conn->connect_error]);
@@ -34,13 +34,15 @@ $result_uczen = $stmt_uczen->get_result();
 
 if ($result_uczen->num_rows > 0) {
     $row = $result_uczen->fetch_assoc();
-    if ($haslo === $row['haslo']) {
+    if ($password === $row['haslo']) { // Porównujemy z hasłem z bazy
         $response = [
             'status' => 'success',
-            'id' => $row['id'], // Dodano ID
-            'imie' => $row['imie'],
-            'nazwisko' => $row['nazwisko'],
-            'rola' => 'Uczniem'
+            'user' => [
+                'id' => $row['id'],
+                'imie' => $row['imie'],
+                'nazwisko' => $row['nazwisko'],
+                'rola' => 'Uczniem'
+            ]
         ];
     }
 }
@@ -55,13 +57,15 @@ if ($response['status'] === 'error') {
 
     if ($result_instruktor->num_rows > 0) {
         $row = $result_instruktor->fetch_assoc();
-        if ($haslo === $row['haslo']) {
+        if ($password === $row['haslo']) { // Porównujemy z hasłem z bazy
             $response = [
                 'status' => 'success',
-                'id' => $row['id'], // Dodano ID
-                'imie' => $row['imie'],
-                'nazwisko' => $row['nazwisko'],
-                'rola' => 'Instruktorem'
+                'user' => [
+                    'id' => $row['id'], 
+                    'imie' => $row['imie'],
+                    'nazwisko' => $row['nazwisko'],
+                    'rola' => 'Instruktorem'
+                ]
             ];
         }
     }
