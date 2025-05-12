@@ -9,18 +9,15 @@
 <body>
   <div class="login-container">
     <h2>Logowanie</h2>
-    <form action="zajecia_praktyczne.html">
-      <input type="text" placeholder="Login" required><br>
-      <input type="password" placeholder="Hasło" required><br>
-      <label>Jestem:
-        <select required>
-          <option value="uczen">Uczeń</option>
-          <option value="instruktor">Instruktor</option>
-        </select>
-      </label><br>
-      <button type="submit">Zaloguj</button>
+    <form id="login-form">
+      <input type="text" id="login" placeholder="Login" required><br>
+      <input type="password" id="password" placeholder="Hasło" required><br>
+      <!-- Usunięto wybór roli -->
+      <button type="button" onclick="loginUser()">Zaloguj</button>
       <p><a href="#">Nie pamiętam hasła</a></p>
+      <div id="notification" class="notification" style="display: none;"></div>
     </form>
   </div>
+  <script src="main.js"></script>
 </body>
 </html>

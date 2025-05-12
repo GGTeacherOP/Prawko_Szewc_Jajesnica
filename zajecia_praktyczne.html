@@ -2,21 +2,172 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
-  <title>Zajęcia praktyczne</title>
+  <title>Moje Zajęcia Praktyczne</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <nav>
-    <a href="info.html">Info</a>
-    <a href="zajecia_praktyczne.html">Zajęcia praktyczne</a>
-    <a href="planowanie.html">Planowanie zajęć</a>
-    <a href="index.html">Wyloguj</a>
+    <a href="info.html" id="nav-info">Info</a>
+    <a href="zajecia_praktyczne.html" id="nav-zajecia">Zajęcia praktyczne</a>
+    <a href="planowanie.html" id="nav-plan">Plan Jazd</a>
+    <a href="index.html" onclick="sessionStorage.clear();">Wyloguj</a>
   </nav>
-  <h2>Twoje jazdy</h2>
-  <table>
-    <tr><th>Data</th><th>Godzina</th><th>Instruktor</th><th>Status</th></tr>
-    <tr class="odbyta"><td>1 maja 2025</td><td>12:00</td><td>Jan Kowalski</td><td>Odbyta</td></tr>
-    <tr class="zaplanowana"><td>6 maja 2025</td><td>14:00</td><td>Anna Nowak</td><td>Zaplanowana</td></tr>
-  </table>
+
+  <div class="container">
+    <h1 id="page-title">Moje Zajęcia Praktyczne</h1>
+    
+    <!-- Sekcja dla Zalogowanego Ucznia -->
+    <div id="student-schedule-view">
+      <p style="text-align: center; margin-bottom: 20px;">Witaj <span id="student-name"></span>! Tutaj znajdziesz listę swoich zaplanowanych jazd.</p>
+      
+      <!-- Formularz rezerwacji (z main.js - jeśli istnieje) -->
+      <!-- Można by tu przenieść lub załączyć formularz rezerwacji z main.js/innego pliku -->
+      <!-- <div id="booking-form-placeholder"></div> -->
+      
+      <h2>Twoje zaplanowane jazdy:</h2>
+      <div id="student-schedule-table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Godzina Od</th>
+              <th>Godzina Do</th>
+              <th>Instruktor</th>
+              <th>Pojazd</th>
+              <th>Status</th>
+              <th>Akcja</th> <!-- Kolumna na odwołanie -->
+            </tr>
+          </thead>
+          <tbody id="student-schedule-tbody">
+            <!-- Dane jazd zostaną załadowane dynamicznie -->
+            <tr><td colspan="7">Ładowanie harmonogramu...</td></tr> 
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Komunikat dla niezalogowanych/instruktorów -->
+    <div id="unauthorized-view-student" style="display: none;">
+        <p style="text-align: center; color: red;">Ta sekcja jest dostępna tylko dla zalogowanych uczniów.</p>
+        <p style="text-align: center;">Jeśli jesteś instruktorem, przejdź do <a href="planowanie.html">Planu Jazd</a>.</p>
+        <p style="text-align: center;">Jeśli nie jesteś zalogowany, przejdź do <a href="index.html">strony logowania</a>.</p>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const userId = sessionStorage.getItem('userId');
+      const userRole = sessionStorage.getItem('userRole');
+      const userName = sessionStorage.getItem('userName');
+
+      const studentView = document.getElementById('student-schedule-view');
+      const unauthorizedView = document.getElementById('unauthorized-view-student');
+      const pageTitle = document.getElementById('page-title');
+
+      if (userId && userRole && userName) {
+        if (userRole === 'Uczniem') {
+          pageTitle.textContent = 'Moje Zajęcia Praktyczne';
+          document.getElementById('student-name').textContent = userName;
+          studentView.style.display = 'block';
+          // Ukryj link "Plan Jazd" dla ucznia, jeśli nie chcemy by tam zaglądał
+          // document.getElementById('nav-plan').style.display = 'none'; 
+          loadStudentSchedule(userId);
+          // Tutaj można dodać kod inicjalizujący formularz rezerwacji, jeśli jest w tym pliku
+          // initBookingForm(); 
+        } else {
+          // Instruktor lub nieznana rola
+          studentView.style.display = 'none';
+          unauthorizedView.style.display = 'block';
+          // Ukryjemy też menu specyficzne dla ucznia
+          document.getElementById('nav-info').style.display = 'none';
+          document.getElementById('nav-zajecia').style.display = 'none';
+        }
+      } else {
+        // Brak danych w sessionStorage - użytkownik niezalogowany
+         studentView.style.display = 'none';
+         unauthorizedView.style.display = 'block';
+      }
+    });
+
+    async function loadStudentSchedule(studentId) {
+      const tbody = document.getElementById('student-schedule-tbody');
+      tbody.innerHTML = '<tr><td colspan="7">Ładowanie harmonogramu...</td></tr>';
+
+      try {
+        const response = await fetch('get_student_schedule.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ student_id: studentId })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Błąd serwera: ${response.status}`);
+        }
+
+        const schedule = await response.json();
+
+        if (schedule.status === 'success' && Array.isArray(schedule.data)) {
+          tbody.innerHTML = ''; 
+          if (schedule.data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7">Nie masz jeszcze żadnych zaplanowanych jazd.</td></tr>';
+          } else {
+            schedule.data.forEach(ride => {
+              const row = tbody.insertRow();
+              // Sprawdź czy jazda już się odbyła, aby zdecydować czy pokazać przycisk odwołania
+              const isPast = new Date(ride.data_jazdy + 'T' + ride.godzina_od) < new Date();
+              const cancelButton = (ride.odbyta || isPast) 
+                ? '' 
+                : `<button class="cancel-button" onclick="confirmCancel(${ride.jazda_id}, this)">Odwołaj</button>`;
+
+              row.innerHTML = `
+                <td>${ride.data_jazdy}</td>
+                <td>${ride.godzina_od.substring(0, 5)}</td>
+                <td>${ride.godzina_do.substring(0, 5)}</td>
+                <td>${ride.instruktor_imie} ${ride.instruktor_nazwisko}</td>
+                <td>${ride.pojazd_rejestracja || '-'}</td>
+                <td>${ride.odbyta ? 'Odbyta' : 'Zaplanowana'}</td>
+                <td>${cancelButton}</td>
+              `;
+            });
+          }
+        } else {
+           tbody.innerHTML = `<tr><td colspan="7">Błąd podczas ładowania harmonogramu: ${schedule.message || 'Nieznany błąd'}</td></tr>`;
+           console.error("Server response error:", schedule.message);
+        }
+      } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="7">Błąd połączenia lub przetwarzania: ${error.message}</td></tr>`;
+        console.error('Error fetching student schedule:', error);
+      }
+    }
+
+    // Funkcja odwoływania jazdy (przykładowa)
+    async function confirmCancel(rideId, button) {
+       // Można dodać sprawdzenie, czy można odwołać (np. nie później niż 24h przed)
+       // const rideDateTime = ... ;
+       // const now = new Date();
+       // if (rideDateTime - now < 24 * 60 * 60 * 1000) { alert("Nie można odwołać jazdy później niż 24h przed terminem."); return; }
+
+      if (confirm("Czy na pewno chcesz odwołać tę jazdę?")) {
+        // Symulacja komunikacji z serwerem w celu odwołania
+        console.log(`Wysyłanie żądania odwołania jazdy o ID: ${rideId}`);
+        // Tutaj docelowo byłoby zapytanie fetch do skryptu PHP (np. cancel_ride.php)
+        // np. await fetch('cancel_ride.php', { method: 'POST', body: JSON.stringify({ ride_id: rideId }) });
+        
+        // Po pomyślnym odwołaniu na serwerze, usuń wiersz
+        let row = button.closest('tr');
+        row.remove();
+        alert("Jazda została odwołana (symulacja).");
+        // Można też ponownie załadować harmonogram: loadStudentSchedule(sessionStorage.getItem('userId'));
+      }
+    }
+
+    // Tutaj można wczytać/zainicjować formularz rezerwacji, np.:
+    // async function initBookingForm() { ... }
+
+  </script>
+
 </body>
 </html>

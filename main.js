@@ -86,3 +86,119 @@ Godzina: ${timeSlot}
   const dateInput = document.getElementById('date');
   const today = new Date().toISOString().split('T')[0];
   dateInput.setAttribute('min', today);
+
+// --- NOWA FUNKCJA LOGOWANIA ---
+async function loginUser() {
+    console.log("loginUser function called"); // <-- DEBUG: Sprawdzenie wywołania
+    const loginInput = document.getElementById('login');
+    const passwordInput = document.getElementById('password');
+    const notificationDiv = document.getElementById('notification');
+
+    // Upewnij się, że elementy istnieją, zanim odczytasz wartość
+    if (!loginInput || !passwordInput || !notificationDiv) {
+        console.error("Nie znaleziono elementów formularza logowania lub powiadomienia.");
+        // Możesz też wyświetlić błąd użytkownikowi w inny sposób
+        alert("Wystąpił błąd interfejsu logowania.");
+        return;
+    }
+
+
+    const login = loginInput.value;
+    const password = passwordInput.value;
+
+    notificationDiv.style.display = 'none'; // Ukryj poprzednie powiadomienia
+    notificationDiv.classList.remove('success', 'error'); // Usuń klasy statusu
+
+    if (!login || !password) {
+        showNotification('Wprowadź login i hasło', 'error');
+        return;
+    }
+    console.log(`Attempting login for user: ${login}`); // <-- DEBUG: Logowanie loginu
+
+    try {
+        console.log("Sending fetch request to login.php..."); // <-- DEBUG: Przed fetch
+        const response = await fetch('login.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ login: login, haslo: password })
+        });
+        console.log("Fetch response received, status:", response.status); // <-- DEBUG: Status odpowiedzi
+
+        // Sprawdź, czy odpowiedź jest OK (status 200-299)
+        if (!response.ok) {
+             // Spróbuj odczytać treść błędu, jeśli serwer ją zwrócił
+             let errorText = `Błąd serwera: ${response.status}`;
+             try {
+                 const errorData = await response.json();
+                 errorText = errorData.message || errorText;
+             } catch(e) {
+                 // Ignoruj błąd parsowania JSON, jeśli odpowiedź nie była JSONem
+             }
+             throw new Error(errorText);
+        }
+
+        const result = await response.json();
+        console.log("Parsed JSON result:", result); // <-- DEBUG: Odpowiedź z PHP
+
+        if (result.status === 'success') {
+            // Zapisz dane użytkownika w sessionStorage
+            sessionStorage.setItem('userId', result.id);
+            sessionStorage.setItem('userRole', result.rola);
+            sessionStorage.setItem('userName', `${result.imie} ${result.nazwisko}`);
+
+            const message = `Witaj ${result.imie} ${result.nazwisko}! Jesteś ${result.rola}.`;
+            showNotification(message, 'success');
+
+            // Przekierowanie po 3 sekundach
+             setTimeout(() => {
+                 // Użyj odpowiednich ścieżek do plików HTML
+                 if (result.rola === 'Uczniem') {
+                     window.location.href = 'zajecia_praktyczne.html';
+                 } else if (result.rola === 'Instruktorem') {
+                     window.location.href = 'planowanie.html'; // Upewnij się, że ta strona istnieje i jest odpowiednia
+                 } else {
+                     // Domyślne przekierowanie, jeśli rola nie jest rozpoznana lub na wszelki wypadek
+                     window.location.href = 'info.html'; // Upewnij się, że ta strona istnieje
+                 }
+             }, 3000); // 3000 ms = 3 sekundy
+
+        } else {
+            showNotification(result.message || 'Nieprawidłowy login lub hasło', 'error');
+        }
+
+    } catch (error) {
+        console.error('Login Error Caught:', error); // <-- DEBUG: Złapany błąd
+        showNotification(`Wystąpił błąd: ${error.message || 'Spróbuj ponownie.'}`, 'error');
+    }
+}
+
+// Funkcja pomocnicza do wyświetlania powiadomień
+function showNotification(message, type) {
+    const notificationDiv = document.getElementById('notification');
+    if (!notificationDiv) {
+        console.error("Nie znaleziono elementu powiadomienia #notification.");
+        alert(message); // Wyświetl jako alert, jeśli div nie istnieje
+        return;
+    }
+    notificationDiv.textContent = message;
+    notificationDiv.className = 'notification ' + type; // Ustaw klasę bazową i klasę typu (success/error)
+    notificationDiv.style.display = 'block';
+    notificationDiv.style.position = 'fixed'; // Aby wycentrować na ekranie
+    notificationDiv.style.left = '50%';
+    notificationDiv.style.top = '50%';
+    notificationDiv.style.transform = 'translate(-50%, -50%)'; // Centrowanie
+    notificationDiv.style.zIndex = '1000'; // Upewnij się, że jest na wierzchu
+
+    // Ukrywaj tylko powiadomienia o błędach po pewnym czasie,
+    // sukces zniknie przy przekierowaniu
+    if (type !== 'success') {
+       setTimeout(() => {
+           if (notificationDiv.style.display !== 'none') { // Sprawdź czy nadal jest widoczne
+                notificationDiv.style.display = 'none';
+           }
+       }, 5000); // Ukryj błąd po 5 sekundach
+    }
+    // Powiadomienie o sukcesie zniknie samo po przekierowaniu strony po 3s
+}

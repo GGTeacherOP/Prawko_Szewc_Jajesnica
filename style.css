@@ -217,6 +217,37 @@ button:active {
 }
 
 
+/* Style dla powiadomień */
+.notification {
+  padding: 15px 20px;
+  border-radius: 8px; /* Łagodniejsze rogi */
+  color: white;
+  text-align: center;
+  font-size: 1.1em;
+  font-weight: 500;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3); /* Wyraźniejszy cień */
+  /* Pozycjonowanie i centrowanie jest w main.js, można je przenieść tutaj */
+  /* position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 1000; */
+  min-width: 280px; /* Minimalna szerokość */
+  max-width: 90%; /* Maksymalna szerokość */
+  box-sizing: border-box;
+  opacity: 0; /* Początkowo ukryte - dla animacji */
+  transition: opacity 0.5s ease-in-out; /* Animacja pojawiania się */
+}
+
+/* Dodanie stylu dla widocznego powiadomienia */
+.notification.show {
+  opacity: 1;
+}
+
+.notification.success {
+  background-color: #28a745; /* Ciemniejszy zielony */
+}
+
+.notification.error {
+  background-color: #dc3545; /* Ciemniejszy czerwony */
+}
+
 /* Klasy statusu (np. w tabeli planowania) */
 .odbyta {
   background-color: #dff0d8; /* Subtelniejszy zielony */

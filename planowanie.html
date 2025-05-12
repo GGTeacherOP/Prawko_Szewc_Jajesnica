@@ -2,75 +2,149 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
-  <title>Twoje Zaplanowane Jazdy</title>
+  <title>Plan Jazd</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <nav>
-    <a href="info.html">Info</a>
-    <a href="zajecia_praktyczne.html">Zajęcia praktyczne</a> <!-- Można tu dodać link do rezerwacji nowych jazd -->
-    <a href="planowanie.html">Zaplanowane Jazdy</a>
-    <a href="index.html">Wyloguj</a>
+    <a href="info.html" id="nav-info">Info</a>
+    <a href="zajecia_praktyczne.html" id="nav-zajecia">Zajęcia praktyczne</a> 
+    <a href="planowanie.html" id="nav-plan">Plan Jazd</a>
+    <a href="index.html" onclick="sessionStorage.clear();">Wyloguj</a> <!-- Czyszczenie sessionStorage przy wylogowaniu -->
   </nav>
 
-  <div class="container"> <!-- Dodano kontener dla lepszego układu -->
-    <h1>Twoje Zaplanowane Jazdy</h1>
-    <p style="text-align: center; margin-bottom: 30px;">Poniżej znajdziesz listę wszystkich zaplanowanych przez Ciebie jazd. Możesz je odwołać najpóźniej 24 godziny przed terminem.</p>
+  <div class="container"> 
+    <h1 id="page-title">Plan Jazd</h1>
 
-    <table>
-      <thead>
-        <tr>
-          <th id="tab">Data</th>
-          <th id="tab">Godzina</th>
-          <th id="tab">Instruktor</th>
-          <th id="tab">Czas trwania</th>
-          <th id="tab">Akcja</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Przykładowe dane - docelowo powinny być ładowane dynamicznie -->
-        <tr>
-          <td id="tab2">2025-05-15</td>
-          <td id="tab2">10:00</td>
-          <td id="tab2">Robert Lewandowski</td>
-          <td id="tab2">2 godziny</td>
-          <td id="tab2"><button class="cancel-button" onclick="confirmCancel(this)">Odwołaj</button></td>
-        </tr>
-        <tr>
-          <td id="tab2">2025-05-17</td>
-          <td id="tab2">08:00</td>
-          <td id="tab2">Muhamed Kebsik</td>
-          <td id="tab2">1 godzina</td>
-          <td id="tab2"><button class="cancel-button" onclick="confirmCancel(this)">Odwołaj</button></td>
-        </tr>
-        <tr>
-          <td id="tab2">2025-05-20</td>
-          <td id="tab2">14:00</td>
-          <td id="tab2">Konrad McGregor</td>
-          <td id="tab2">2 godziny</td>
-          <td id="tab2"><button class="cancel-button" onclick="confirmCancel(this)">Odwołaj</button></td>
-        </tr>
-         <tr>
-          <td id="tab2">2025-05-22</td>
-          <td id="tab2">16:00</td>
-          <td id="tab2">Robert Lewandowski</td>
-          <td id="tab2">1 godzina</td>
-          <td id="tab2"><button class="cancel-button" onclick="confirmCancel(this)">Odwołaj</button></td>
-        </tr>
-        <!-- Koniec przykładowych danych -->
-      </tbody>
-    </table>
+    <!-- Sekcja dla Instruktora -->
+    <div id="instructor-view" style="display: none;">
+      <p style="text-align: center; margin-bottom: 20px;">Witaj <span id="instructor-name"></span>! Oto Twój harmonogram jazd:</p>
+      <div id="instructor-schedule-table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Uczeń</th>
+              <th>Data</th>
+              <th>Godzina Od</th>
+              <th>Godzina Do</th>
+              <th>Pojazd</th>
+              <th>Status</th> 
+            </tr>
+          </thead>
+          <tbody id="instructor-schedule-tbody">
+            <!-- Dane zostaną załadowane dynamicznie -->
+            <tr><td colspan="6">Ładowanie harmonogramu...</td></tr>
+          </tbody>
+        </table>
+      </div>
+       <p style="text-align: center; margin-top: 20px;">Jako instruktor, nie możesz planować jazd z tego miejsca. Uczniowie rezerwują jazdy przez zakładkę "Zajęcia praktyczne".</p>
+    </div>
+
+    <!-- Sekcja dla Ucznia -->
+    <div id="student-view" style="display: none;">
+       <p style="text-align: center; margin-bottom: 30px;">Ta sekcja ("Plan Jazd") jest przeznaczona głównie dla instruktorów do przeglądania ich harmonogramu.</p>
+       <p style="text-align: center;">Aby zobaczyć swoje zaplanowane jazdy lub zarezerwować nowe, przejdź do zakładki <a href="zajecia_praktyczne.html">Zajęcia praktyczne</a>.</p>
+       <!-- Można tu też w przyszłości dodać tabelę jazd ucznia, jeśli zmienimy logikę -->
+    </div>
+    
+    <!-- Komunikat dla niezalogowanych/błąd -->
+    <div id="unauthorized-view" style="display: none;">
+        <p style="text-align: center; color: red;">Nie jesteś zalogowany lub wystąpił błąd. Przejdź do <a href="index.html">strony logowania</a>.</p>
+    </div>
+
   </div>
 
   <script>
-    // Prosta funkcja do potwierdzenia odwołania
+    document.addEventListener('DOMContentLoaded', function() {
+      const userId = sessionStorage.getItem('userId');
+      const userRole = sessionStorage.getItem('userRole');
+      const userName = sessionStorage.getItem('userName');
+
+      const instructorView = document.getElementById('instructor-view');
+      const studentView = document.getElementById('student-view');
+      const unauthorizedView = document.getElementById('unauthorized-view');
+      const pageTitle = document.getElementById('page-title');
+
+      if (userId && userRole && userName) {
+        if (userRole === 'Instruktorem') {
+          pageTitle.textContent = 'Harmonogram Instruktora';
+          document.getElementById('instructor-name').textContent = userName;
+          instructorView.style.display = 'block';
+          // Ukryj linki dla instruktora
+          document.getElementById('nav-info').style.display = 'none';
+          document.getElementById('nav-zajecia').style.display = 'none';
+          loadInstructorSchedule(userId);
+        } else if (userRole === 'Uczniem') {
+           pageTitle.textContent = 'Informacja dla Ucznia';
+          studentView.style.display = 'block';
+          // Tutaj potencjalnie można by ładować jazdy ucznia, jeśli zdecydujemy się je tu pokazywać
+          // loadStudentSchedule(userId); 
+        } else {
+          // Nieznana rola
+          unauthorizedView.style.display = 'block';
+        }
+      } else {
+        // Brak danych w sessionStorage - użytkownik niezalogowany
+        unauthorizedView.style.display = 'block';
+      }
+    });
+
+    async function loadInstructorSchedule(instructorId) {
+      const tbody = document.getElementById('instructor-schedule-tbody');
+      tbody.innerHTML = '<tr><td colspan="6">Ładowanie harmonogramu...</td></tr>'; // Pokaż status ładowania
+
+      try {
+        // Używamy POST, aby potencjalnie łatwiej przekazać ID w przyszłości, jeśli będzie bardziej złożone
+        const response = await fetch('get_instructor_schedule.php', { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ instructor_id: instructorId }) 
+        });
+
+        if (!response.ok) {
+          throw new Error(`Błąd serwera: ${response.status}`);
+        }
+
+        const schedule = await response.json();
+
+        if (schedule.status === 'success' && Array.isArray(schedule.data)) {
+          tbody.innerHTML = ''; // Wyczyść "Ładowanie..."
+          if (schedule.data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6">Brak zaplanowanych jazd.</td></tr>';
+          } else {
+            schedule.data.forEach(ride => {
+              const row = tbody.insertRow();
+              row.innerHTML = `
+                <td>${ride.uczen_imie} ${ride.uczen_nazwisko}</td>
+                <td>${ride.data_jazdy}</td>
+                <td>${ride.godzina_od.substring(0, 5)}</td>
+                <td>${ride.godzina_do.substring(0, 5)}</td>
+                <td>${ride.pojazd_rejestracja || '-'}</td>
+                <td>${ride.odbyta ? 'Odbyta' : 'Zaplanowana'}</td> 
+              `;
+            });
+          }
+        } else {
+            // Błąd zwrócony przez PHP (np. błąd zapytania) lub niepoprawny format danych
+           tbody.innerHTML = `<tr><td colspan="6">Błąd podczas ładowania harmonogramu: ${schedule.message || 'Nieznany błąd'}</td></tr>`;
+           console.error("Server response error:", schedule.message);
+        }
+      } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="6">Błąd połączenia lub przetwarzania: ${error.message}</td></tr>`;
+        console.error('Error fetching instructor schedule:', error);
+      }
+    }
+
+    // Poniżej zachowujemy funkcję confirmCancel, ale nie jest ona już używana w widoku instruktora
+    // Może przydać się, jeśli dodamy tabelę dla ucznia.
     function confirmCancel(button) {
       if (confirm("Czy na pewno chcesz odwołać tę jazdę?")) {
         // Tutaj docelowo logika odwołania jazdy (np. zapytanie do serwera)
-        // Na razie tylko usuwamy wiersz z tabeli dla demonstracji
         let row = button.closest('tr');
         row.remove();
-        alert("Jazda została odwołana.");
+        alert("Jazda została odwołana (symulacja).");
       }
     }
   </script>
