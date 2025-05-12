@@ -14,6 +14,44 @@
   </nav>
   <h1 id="info">O naszej szkole jazdy</h1>
   <h3 id="info2">Nasza szkoła jazdy oferuje profesjonalne kursy nauki jazdy, elastyczne terminy zajęć oraz doświadczonych instruktorów. Uczymy z pasją!</h3>
+  <h2 id="info2">Yo! Szukasz prawka? Trafiłeś/aś w dziesiątkę! 😎 U nas luz, blues i pełen profesjonalizm.<br>Nasi instruktorzy to nie nudziarze – pokażą Ci, jak śmigać po mieście i zdać egzamin za pierwszym razem. Mamy elastyczne godziny, spoko fury i zero stresu. Wbijaj do nas, a prawko będzie Twoje! 🚗💨</h2>
+
+  <section class="container planning-section">
+    <h2>Zaplanuj swoją jazdę</h2>
+    <form id="planning-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="instructor">Wybierz instruktora:</label>
+          <select id="instructor" name="instructor" required>
+            <option value="" disabled selected>-- Wybierz --</option>
+            <option value="Muhamed Kebsik">Muhamed Kebsik</option>
+            <option value="Robert Lewandowski">Robert Lewandowski</option>
+            <option value="Konrad McGregor">Konrad McGregor</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="duration">Czas trwania:</label>
+          <select id="duration" name="duration" required>
+            <option value="1">1 godzina</option>
+            <option value="2">2 godziny</option>
+          </select>
+        </div>
+        <div class="form-group">
+            <label for="date">Data:</label>
+            <input type="date" id="date" name="date" required>
+        </div>
+      </div>
+      <button type="button" onclick="showAvailableSlots()">Pokaż dostępne terminy</button>
+    </form>
+    <div id="available-slots" class="slots-container" style="display: none;">
+      <h3>Dostępne terminy:</h3>
+      <div id="slots-list">
+        
+      </div>
+    </div>
+  </section>
+
+
   <h2 id="info3">Nasi instruktorzy</h2>
   <table>
     <tr>
@@ -37,5 +75,8 @@
       <td id="tab2">To będzie najbardziej emocjonująca i powalająca jazda w twoim życiu!</td>
     </tr>
   </table>
+
+  <script src="main.js"></script>
+
 </body>
 </html>

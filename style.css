@@ -1,77 +1,235 @@
+/* Globalne style */
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background: #f2f2f2;
-  }
-  nav {
-    background-color: #222;
-    padding: 10px;
-    text-align: center;
-  }
-  nav a {
-    color: white;
-    margin: 0 15px;
-    text-decoration: none;
-  }
-  .login-container, form, table {
-    margin: 30px auto;
-    width: 90%;
-    max-width: 500px;
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  }
-  input, select, button {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Nowoczesna, czytelna czcionka */
+  margin: 0;
+  padding: 0;
+  background-color: #f4f7f6; /* Jasne, neutralne tło */
+  color: #333; /* Domyślny kolor tekstu */
+  line-height: 1.6;
+}
+
+/* Nawigacja */
+nav {
+  background-color: #0044cc; /* Główny kolor akcentujący */
+  color: white;
+  padding: 15px 20px; /* Więcej przestrzeni */
+  text-align: center; /* Wyśrodkowanie linków */
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+nav a {
+  color: white;
+  margin: 0 15px;
+  text-decoration: none;
+  font-weight: 500; /* Lekko pogrubione linki */
+  transition: color 0.3s ease; /* Płynne przejście koloru */
+  display: inline-block; /* Umożliwia padding i marginesy */
+  padding: 5px 0; /* Dodatkowy padding pionowy dla lepszego klikania */
+}
+
+nav a:hover, nav a:focus {
+  color: #e6f0ff; /* Jaśniejszy kolor przy najechaniu */
+  text-decoration: underline;
+}
+
+/* Kontener główny */
+.container {
+  max-width: 1100px;
+  margin: 30px auto; /* Zwiększony margines */
+  padding: 0 20px;
+}
+
+/* Nagłówki */
+h1, h2, h3 {
+  color: #0044cc; /* Główny kolor dla nagłówków */
+  margin-top: 1.5em; /* Dodany górny margines */
+  margin-bottom: 0.8em;
+  font-weight: 600; /* Nieco grubsza czcionka */
+}
+
+h1 {
+  font-size: 2.5em;
+  text-align: center;
+  margin-top: 30px; /* Zgodne z poprzednim stylem #info */
+}
+h2 {
+  font-size: 1.8em;
+  border-bottom: 2px solid #e0e0e0; /* Subtelna linia pod H2 */
+  padding-bottom: 0.3em;
+}
+h3 {
+  font-size: 1.4em;
+  color: #3399ff; /* Jaśniejszy niebieski dla H3 */
+}
+
+/* Sekcja Info */
+/* #info używa teraz stylów z ogólnego H1 */
+
+#info2 {
+  text-align: center;
+  color: #333;
+  margin: 30px auto 40px auto; /* Zaktualizowane marginesy */
+  padding: 25px; /* Zwiększony padding */
+  background-color: #e6f0ff; /* Jasnoniebieskie tło */
+  border-left: 6px solid #0044cc; /* Grubsza ramka */
+  font-size: 1.15em; /* Nieco większa czcionka */
+  max-width: 800px; /* Ograniczenie szerokości dla lepszej czytelności */
+  box-shadow: 0 2px 5px rgba(0,0,0,0.08); /* Delikatny cień */
+  border-radius: 5px; /* Zaokrąglenie rogów */
+}
+
+/* #info3 używa teraz stylów z ogólnego H2 */
+#info3 {
+  text-align: center;
+  margin-top: 50px;
+  border-bottom: none; /* Usunięcie domyślnej linii pod H2 dla tego konkretnego elementu */
+}
+
+/* Tabele */
+table {
+  width: 95%; /* Zwiększona szerokość tabeli */
+  max-width: 1000px;
+  border-collapse: collapse;
+  text-align: center;
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  margin: 40px auto; /* Zwiększony margines */
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1); /* Wyraźniejszy cień */
+  border-radius: 6px; /* Lekko większe zaokrąglenie */
+  overflow: hidden;
+}
+
+th, td {
+  border: 1px solid #e0e0e0;
+  padding: 16px 12px; /* Zwiększony padding pionowy */
+  vertical-align: middle;
+}
+
+/* Nagłówek tabeli */
+#tab { /* Zastosowane do TH */
+  background-color: #0044cc;
+  color: white;
+  font-weight: 600; /* Pogrubienie */
+  font-size: 1.1em;
+  border-bottom: 2px solid #003399;
+  text-transform: uppercase; /* Wielkie litery dla nagłówków */
+  letter-spacing: 0.5px; /* Mały odstęp między literami */
+}
+
+/* Komórki tabeli */
+#tab2 { /* Zastosowane do TD */
+   background-color: #fdfdfd; /* Bardzo jasne tło dla wierszy (opcjonalnie) */
+}
+/* Efekt hover na wierszach tabeli (opcjonalnie) */
+tr:hover td {
+  background-color: #f1f5f9;
+}
+
+
+/* Obrazki w tabeli */
+img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 5px solid #e6f0ff; /* Grubsza ramka */
+  box-shadow: 0 2px 8px rgba(0, 68, 204, 0.25); /* Wyraźniejszy cień */
+  display: block;
+  margin: 10px auto;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+img:hover {
+    transform: scale(1.08); /* Większe powiększenie */
+    box-shadow: 0 4px 12px rgba(0, 68, 204, 0.35); /* Mocniejszy cień przy najechaniu */
+}
+
+
+/* Formularze */
+form {
+  max-width: 550px; /* Nieco szerszy formularz */
+  margin: 40px auto;
+  padding: 35px; /* Więcej paddingu */
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  border-radius: 6px;
+}
+
+input[type="text"],
+input[type="date"],
+input[type="time"],
+input[type="email"],
+input[type="password"],
+select,
+textarea {
+  display: block;
+  width: calc(100% - 26px); /* Dostosowanie szerokości do paddingu */
+  margin: 10px 0 20px 0;
+  padding: 13px; /* Większy padding */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1em;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  background-color: #fdfdfd;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #0044cc;
+  outline: none;
+  box-shadow: 0 0 8px rgba(0, 68, 204, 0.3); /* Wyraźniejszy cień focusa */
+}
+
+/* Etykiety formularza (opcjonalnie) */
+label {
     display: block;
-    width: 100%;
-    margin: 10px 0;
-    padding: 10px;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  th, td {
-    border: 1px solid #ccc;
-    padding: 10px;
-    text-align: center;
-  }
-  .odbyta {
-    background-color: #d0f0c0;
-  }
-  .zaplanowana {
-    background-color: #f0e68c;
-  }
-  #info, #info2{
-    text-align: center;
-  }
-  table{
-    width: 80%;
-    max-width: 900px;
-    border-collapse: collapse;
-    text-align: center;
-    background-color: #e6f0ff;
-    border: 2px solid #3399ff;
-    margin-bottom: 40px;
-  }
-  #tab{
-    background-color: #3399ff;
-    color: white;
-  }
-  #tab2, #tab{
-    border: 1px solid #99ccff;
-    padding: 15px;
-  }
-  img{
-    width: 200px;
-    height: auto;
-    border-radius: 50%;
-    border: 2px solid #3399ff;
-  }
-  #info3{
-    color: #0044cc;
-    margin-top: 40px;
-    text-align: center;
-  }
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #555;
+}
+
+
+button {
+  display: block;
+  width: 100%;
+  padding: 14px 20px; /* Większy padding */
+  margin-top: 25px;
+  background-color: #0044cc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1.15em; /* Większa czcionka */
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.1s ease;
+  letter-spacing: 0.5px;
+}
+
+button:hover, button:focus {
+  background-color: #003399;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  outline: none;
+  transform: translateY(-1px); /* Lekkie uniesienie przycisku */
+}
+button:active {
+    transform: translateY(0); /* Powrót do pozycji przy kliknięciu */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+
+/* Klasy statusu (np. w tabeli planowania) */
+.odbyta {
+  background-color: #dff0d8; /* Subtelniejszy zielony */
+  color: #3c763d; /* Ciemniejszy zielony tekst */
+  font-weight: 500;
+  border-left: 4px solid #5cb85c; /* Zielona ramka dla akcentu */
+  padding-left: 10px; /* Odstęp od ramki */
+}
+
+.zaplanowana {
+  background-color: #fcf8e3; /* Subtelniejszy żółty */
+  color: #8a6d3b; /* Ciemniejszy żółty/brązowy tekst */
+  font-weight: 500;
+  border-left: 4px solid #f0ad4e; /* Pomarańczowa ramka dla akcentu */
+  padding-left: 10px; /* Odstęp od ramki */
+}

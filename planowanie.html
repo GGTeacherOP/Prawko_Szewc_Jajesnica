@@ -2,34 +2,78 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
-  <title>Planowanie jazd</title>
+  <title>Twoje Zaplanowane Jazdy</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <nav>
     <a href="info.html">Info</a>
-    <a href="zajecia_praktyczne.html">Zajęcia praktyczne</a>
-    <a href="planowanie.html">Planowanie zajęć</a>
+    <a href="zajecia_praktyczne.html">Zajęcia praktyczne</a> <!-- Można tu dodać link do rezerwacji nowych jazd -->
+    <a href="planowanie.html">Zaplanowane Jazdy</a>
     <a href="index.html">Wyloguj</a>
   </nav>
-  <h2>Wybierz termin jazdy</h2>
-  <form>
-    <label>Data: <input type="date" required></label><br>
-    <label>Godzina:
-      <select required>
-        <option>7:00</option><option>8:00</option><option>9:00</option>
-        <option>10:00</option><option>11:00</option><option>12:00</option>
-        <option>13:00</option><option>14:00</option><option>15:00</option>
-        <option>16:00</option><option>17:00</option>
-      </select>
-    </label><br>
-    <label>Instruktor:
-      <select required>
-        <option>Jan Kowalski</option>
-        <option>Anna Nowak</option>
-      </select>
-    </label><br>
-    <button type="submit">Zaplanuj</button>
-  </form>
+
+  <div class="container"> <!-- Dodano kontener dla lepszego układu -->
+    <h1>Twoje Zaplanowane Jazdy</h1>
+    <p style="text-align: center; margin-bottom: 30px;">Poniżej znajdziesz listę wszystkich zaplanowanych przez Ciebie jazd. Możesz je odwołać najpóźniej 24 godziny przed terminem.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th id="tab">Data</th>
+          <th id="tab">Godzina</th>
+          <th id="tab">Instruktor</th>
+          <th id="tab">Czas trwania</th>
+          <th id="tab">Akcja</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Przykładowe dane - docelowo powinny być ładowane dynamicznie -->
+        <tr>
+          <td id="tab2">2025-05-15</td>
+          <td id="tab2">10:00</td>
+          <td id="tab2">Robert Lewandowski</td>
+          <td id="tab2">2 godziny</td>
+          <td id="tab2"><button class="cancel-button" onclick="confirmCancel(this)">Odwołaj</button></td>
+        </tr>
+        <tr>
+          <td id="tab2">2025-05-17</td>
+          <td id="tab2">08:00</td>
+          <td id="tab2">Muhamed Kebsik</td>
+          <td id="tab2">1 godzina</td>
+          <td id="tab2"><button class="cancel-button" onclick="confirmCancel(this)">Odwołaj</button></td>
+        </tr>
+        <tr>
+          <td id="tab2">2025-05-20</td>
+          <td id="tab2">14:00</td>
+          <td id="tab2">Konrad McGregor</td>
+          <td id="tab2">2 godziny</td>
+          <td id="tab2"><button class="cancel-button" onclick="confirmCancel(this)">Odwołaj</button></td>
+        </tr>
+         <tr>
+          <td id="tab2">2025-05-22</td>
+          <td id="tab2">16:00</td>
+          <td id="tab2">Robert Lewandowski</td>
+          <td id="tab2">1 godzina</td>
+          <td id="tab2"><button class="cancel-button" onclick="confirmCancel(this)">Odwołaj</button></td>
+        </tr>
+        <!-- Koniec przykładowych danych -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // Prosta funkcja do potwierdzenia odwołania
+    function confirmCancel(button) {
+      if (confirm("Czy na pewno chcesz odwołać tę jazdę?")) {
+        // Tutaj docelowo logika odwołania jazdy (np. zapytanie do serwera)
+        // Na razie tylko usuwamy wiersz z tabeli dla demonstracji
+        let row = button.closest('tr');
+        row.remove();
+        alert("Jazda została odwołana.");
+      }
+    }
+  </script>
+
 </body>
 </html>
