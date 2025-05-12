@@ -10,13 +10,12 @@
     <a href="info.html" id="nav-info">Info</a>
     <a href="zajecia_praktyczne.html" id="nav-zajecia">Zajęcia praktyczne</a> 
     <a href="planowanie.html" id="nav-plan">Plan Jazd</a>
-    <a href="index.html" onclick="sessionStorage.clear();">Wyloguj</a> <!-- Czyszczenie sessionStorage przy wylogowaniu -->
+    <a href="index.html" onclick="sessionStorage.clear();">Wyloguj</a> 
   </nav>
 
   <div class="container"> 
     <h1 id="page-title">Plan Jazd</h1>
 
-    <!-- Sekcja dla Instruktora -->
     <div id="instructor-view" style="display: none;">
       <p style="text-align: center; margin-bottom: 20px;">Witaj <span id="instructor-name"></span>! Oto Twój harmonogram jazd:</p>
       <div id="instructor-schedule-table-container">
@@ -32,7 +31,6 @@
             </tr>
           </thead>
           <tbody id="instructor-schedule-tbody">
-            <!-- Dane zostaną załadowane dynamicznie -->
             <tr><td colspan="6">Ładowanie harmonogramu...</td></tr>
           </tbody>
         </table>
@@ -40,14 +38,12 @@
        <p style="text-align: center; margin-top: 20px;">Jako instruktor, nie możesz planować jazd z tego miejsca. Uczniowie rezerwują jazdy przez zakładkę "Zajęcia praktyczne".</p>
     </div>
 
-    <!-- Sekcja dla Ucznia -->
     <div id="student-view" style="display: none;">
        <p style="text-align: center; margin-bottom: 30px;">Ta sekcja ("Plan Jazd") jest przeznaczona głównie dla instruktorów do przeglądania ich harmonogramu.</p>
        <p style="text-align: center;">Aby zobaczyć swoje zaplanowane jazdy lub zarezerwować nowe, przejdź do zakładki <a href="zajecia_praktyczne.html">Zajęcia praktyczne</a>.</p>
-       <!-- Można tu też w przyszłości dodać tabelę jazd ucznia, jeśli zmienimy logikę -->
     </div>
     
-    <!-- Komunikat dla niezalogowanych/błąd -->
+    <div id="unauthorized-view" style="display: none;">
     <div id="unauthorized-view" style="display: none;">
         <p style="text-align: center; color: red;">Nie jesteś zalogowany lub wystąpił błąd. Przejdź do <a href="index.html">strony logowania</a>.</p>
     </div>
@@ -70,31 +66,25 @@
           pageTitle.textContent = 'Harmonogram Instruktora';
           document.getElementById('instructor-name').textContent = userName;
           instructorView.style.display = 'block';
-          // Ukryj linki dla instruktora
           document.getElementById('nav-info').style.display = 'none';
           document.getElementById('nav-zajecia').style.display = 'none';
           loadInstructorSchedule(userId);
         } else if (userRole === 'Uczniem') {
            pageTitle.textContent = 'Informacja dla Ucznia';
           studentView.style.display = 'block';
-          // Tutaj potencjalnie można by ładować jazdy ucznia, jeśli zdecydujemy się je tu pokazywać
-          // loadStudentSchedule(userId); 
         } else {
-          // Nieznana rola
           unauthorizedView.style.display = 'block';
         }
       } else {
-        // Brak danych w sessionStorage - użytkownik niezalogowany
         unauthorizedView.style.display = 'block';
       }
     });
 
     async function loadInstructorSchedule(instructorId) {
       const tbody = document.getElementById('instructor-schedule-tbody');
-      tbody.innerHTML = '<tr><td colspan="6">Ładowanie harmonogramu...</td></tr>'; // Pokaż status ładowania
+      tbody.innerHTML = '<tr><td colspan="6">Ładowanie harmonogramu...</td></tr>'; 
 
       try {
-        // Używamy POST, aby potencjalnie łatwiej przekazać ID w przyszłości, jeśli będzie bardziej złożone
         const response = await fetch('get_instructor_schedule.php', { 
             method: 'POST',
             headers: {
@@ -110,7 +100,7 @@
         const schedule = await response.json();
 
         if (schedule.status === 'success' && Array.isArray(schedule.data)) {
-          tbody.innerHTML = ''; // Wyczyść "Ładowanie..."
+          tbody.innerHTML = ''; 
           if (schedule.data.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6">Brak zaplanowanych jazd.</td></tr>';
           } else {
@@ -127,7 +117,6 @@
             });
           }
         } else {
-            // Błąd zwrócony przez PHP (np. błąd zapytania) lub niepoprawny format danych
            tbody.innerHTML = `<tr><td colspan="6">Błąd podczas ładowania harmonogramu: ${schedule.message || 'Nieznany błąd'}</td></tr>`;
            console.error("Server response error:", schedule.message);
         }
@@ -137,11 +126,8 @@
       }
     }
 
-    // Poniżej zachowujemy funkcję confirmCancel, ale nie jest ona już używana w widoku instruktora
-    // Może przydać się, jeśli dodamy tabelę dla ucznia.
     function confirmCancel(button) {
       if (confirm("Czy na pewno chcesz odwołać tę jazdę?")) {
-        // Tutaj docelowo logika odwołania jazdy (np. zapytanie do serwera)
         let row = button.closest('tr');
         row.remove();
         alert("Jazda została odwołana (symulacja).");

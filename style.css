@@ -1,19 +1,17 @@
-/* Globalne style */
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Nowoczesna, czytelna czcionka */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
   margin: 0;
   padding: 0;
-  background-color: #f4f7f6; /* Jasne, neutralne tło */
-  color: #333; /* Domyślny kolor tekstu */
+  background-color: #f4f7f6; 
+  color: #333; 
   line-height: 1.6;
 }
 
-/* Nawigacja */
 nav {
-  background-color: #0044cc; /* Główny kolor akcentujący */
+  background-color: #0044cc;
   color: white;
-  padding: 15px 20px; /* Więcej przestrzeni */
-  text-align: center; /* Wyśrodkowanie linków */
+  padding: 15px 20px; 
+  text-align: center; 
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
@@ -21,135 +19,124 @@ nav a {
   color: white;
   margin: 0 15px;
   text-decoration: none;
-  font-weight: 500; /* Lekko pogrubione linki */
-  transition: color 0.3s ease; /* Płynne przejście koloru */
-  display: inline-block; /* Umożliwia padding i marginesy */
-  padding: 5px 0; /* Dodatkowy padding pionowy dla lepszego klikania */
+  font-weight: 500; 
+  transition: color 0.3s ease; 
+  display: inline-block; 
+  padding: 5px 0; 
 }
 
 nav a:hover, nav a:focus {
-  color: #e6f0ff; /* Jaśniejszy kolor przy najechaniu */
+  color: #e6f0ff; 
   text-decoration: underline;
 }
 
-/* Kontener główny */
 .container {
   max-width: 1100px;
-  margin: 30px auto; /* Zwiększony margines */
+  margin: 30px auto; 
   padding: 0 20px;
 }
 
-/* Nagłówki */
 h1, h2, h3 {
-  color: #0044cc; /* Główny kolor dla nagłówków */
-  margin-top: 1.5em; /* Dodany górny margines */
+  color: #0044cc; 
+  margin-top: 1.5em; 
   margin-bottom: 0.8em;
-  font-weight: 600; /* Nieco grubsza czcionka */
+  font-weight: 600; 
 }
 
 h1 {
   font-size: 2.5em;
   text-align: center;
-  margin-top: 30px; /* Zgodne z poprzednim stylem #info */
+  margin-top: 30px; 
 }
 h2 {
   font-size: 1.8em;
-  border-bottom: 2px solid #e0e0e0; /* Subtelna linia pod H2 */
+  border-bottom: 2px solid #e0e0e0; 
   padding-bottom: 0.3em;
 }
 h3 {
   font-size: 1.4em;
-  color: #3399ff; /* Jaśniejszy niebieski dla H3 */
+  color: #3399ff; 
 }
-
-/* Sekcja Info */
-/* #info używa teraz stylów z ogólnego H1 */
 
 #info2 {
   text-align: center;
   color: #333;
-  margin: 30px auto 40px auto; /* Zaktualizowane marginesy */
-  padding: 25px; /* Zwiększony padding */
-  background-color: #e6f0ff; /* Jasnoniebieskie tło */
-  border-left: 6px solid #0044cc; /* Grubsza ramka */
-  font-size: 1.15em; /* Nieco większa czcionka */
-  max-width: 800px; /* Ograniczenie szerokości dla lepszej czytelności */
-  box-shadow: 0 2px 5px rgba(0,0,0,0.08); /* Delikatny cień */
-  border-radius: 5px; /* Zaokrąglenie rogów */
+  margin: 30px auto 40px auto; 
+  padding: 25px; 
+  background-color: #e6f0ff; 
+  border-left: 6px solid #0044cc; 
+  font-size: 1.15em; 
+  max-width: 800px; 
+  box-shadow: 0 2px 5px rgba(0,0,0,0.08); 
+  border-radius: 5px; 
 }
 
-/* #info3 używa teraz stylów z ogólnego H2 */
 #info3 {
   text-align: center;
   margin-top: 50px;
-  border-bottom: none; /* Usunięcie domyślnej linii pod H2 dla tego konkretnego elementu */
+  border-bottom: none; 
 }
 
-/* Tabele */
 table {
-  width: 95%; /* Zwiększona szerokość tabeli */
+  width: 95%; 
   max-width: 1000px;
   border-collapse: collapse;
   text-align: center;
   background-color: #ffffff;
   border: 1px solid #ddd;
-  margin: 40px auto; /* Zwiększony margines */
-  box-shadow: 0 3px 10px rgba(0,0,0,0.1); /* Wyraźniejszy cień */
-  border-radius: 6px; /* Lekko większe zaokrąglenie */
+  margin: 40px auto; 
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1); 
+  border-radius: 6px; 
   overflow: hidden;
 }
 
 th, td {
   border: 1px solid #e0e0e0;
-  padding: 16px 12px; /* Zwiększony padding pionowy */
+  padding: 16px 12px; 
   vertical-align: middle;
 }
 
-/* Nagłówek tabeli */
-#tab { /* Zastosowane do TH */
+#tab { 
   background-color: #0044cc;
   color: white;
-  font-weight: 600; /* Pogrubienie */
+  font-weight: 600; 
   font-size: 1.1em;
   border-bottom: 2px solid #003399;
-  text-transform: uppercase; /* Wielkie litery dla nagłówków */
-  letter-spacing: 0.5px; /* Mały odstęp między literami */
+  text-transform: uppercase; 
+  letter-spacing: 0.5px; 
 }
 
-/* Komórki tabeli */
-#tab2 { /* Zastosowane do TD */
-   background-color: #fdfdfd; /* Bardzo jasne tło dla wierszy (opcjonalnie) */
+#tab2 { 
+   background-color: #fdfdfd; 
 }
-/* Efekt hover na wierszach tabeli (opcjonalnie) */
+
 tr:hover td {
   background-color: #f1f5f9;
 }
 
 
-/* Obrazki w tabeli */
 img {
   width: 120px;
   height: 120px;
   object-fit: cover;
   border-radius: 50%;
-  border: 5px solid #e6f0ff; /* Grubsza ramka */
-  box-shadow: 0 2px 8px rgba(0, 68, 204, 0.25); /* Wyraźniejszy cień */
+  border: 5px solid #e6f0ff; 
+  box-shadow: 0 2px 8px rgba(0, 68, 204, 0.25); 
   display: block;
   margin: 10px auto;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 img:hover {
-    transform: scale(1.08); /* Większe powiększenie */
-    box-shadow: 0 4px 12px rgba(0, 68, 204, 0.35); /* Mocniejszy cień przy najechaniu */
+    transform: scale(1.08);   
+    box-shadow: 0 4px 12px rgba(0, 68, 204, 0.35); 
 }
 
 
-/* Formularze */
 form {
-  max-width: 550px; /* Nieco szerszy formularz */
+  max-width: 550px; 
   margin: 40px auto;
-  padding: 35px; /* Więcej paddingu */
+  padding: 35px; 
   background-color: #ffffff;
   border: 1px solid #ddd;
   box-shadow: 0 3px 10px rgba(0,0,0,0.1);
@@ -164,9 +151,9 @@ input[type="password"],
 select,
 textarea {
   display: block;
-  width: calc(100% - 26px); /* Dostosowanie szerokości do paddingu */
+  width: calc(100% - 26px); 
   margin: 10px 0 20px 0;
-  padding: 13px; /* Większy padding */
+  padding: 13px; 
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 1em;
@@ -177,10 +164,9 @@ textarea {
 input:focus, select:focus, textarea:focus {
   border-color: #0044cc;
   outline: none;
-  box-shadow: 0 0 8px rgba(0, 68, 204, 0.3); /* Wyraźniejszy cień focusa */
+  box-shadow: 0 0 8px rgba(0, 68, 204, 0.3); 
 }
 
-/* Etykiety formularza (opcjonalnie) */
 label {
     display: block;
     margin-bottom: 5px;
@@ -192,13 +178,13 @@ label {
 button {
   display: block;
   width: 100%;
-  padding: 14px 20px; /* Większy padding */
+  padding: 14px 20px; 
   margin-top: 25px;
   background-color: #0044cc;
   color: white;
   border: none;
   border-radius: 4px;
-  font-size: 1.15em; /* Większa czcionka */
+  font-size: 1.15em; 
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.1s ease;
@@ -209,58 +195,53 @@ button:hover, button:focus {
   background-color: #003399;
   box-shadow: 0 4px 8px rgba(0,0,0,0.2);
   outline: none;
-  transform: translateY(-1px); /* Lekkie uniesienie przycisku */
+  transform: translateY(-1px); 
 }
 button:active {
-    transform: translateY(0); /* Powrót do pozycji przy kliknięciu */
+    transform: translateY(0); 
     box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
 
 
-/* Style dla powiadomień */
 .notification {
   padding: 15px 20px;
-  border-radius: 8px; /* Łagodniejsze rogi */
+  border-radius: 8px; 
   color: white;
   text-align: center;
   font-size: 1.1em;
   font-weight: 500;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3); /* Wyraźniejszy cień */
-  /* Pozycjonowanie i centrowanie jest w main.js, można je przenieść tutaj */
-  /* position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 1000; */
-  min-width: 280px; /* Minimalna szerokość */
-  max-width: 90%; /* Maksymalna szerokość */
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
+  min-width: 280px; 
+  max-width: 90%; 
   box-sizing: border-box;
-  opacity: 0; /* Początkowo ukryte - dla animacji */
-  transition: opacity 0.5s ease-in-out; /* Animacja pojawiania się */
+  opacity: 0; 
+  transition: opacity 0.5s ease-in-out; 
 }
 
-/* Dodanie stylu dla widocznego powiadomienia */
 .notification.show {
   opacity: 1;
 }
 
 .notification.success {
-  background-color: #28a745; /* Ciemniejszy zielony */
+  background-color: #28a745; 
 }
 
 .notification.error {
-  background-color: #dc3545; /* Ciemniejszy czerwony */
+  background-color: #dc3545; 
 }
 
-/* Klasy statusu (np. w tabeli planowania) */
 .odbyta {
-  background-color: #dff0d8; /* Subtelniejszy zielony */
-  color: #3c763d; /* Ciemniejszy zielony tekst */
+  background-color: #dff0d8; 
+  color: #3c763d; 
   font-weight: 500;
-  border-left: 4px solid #5cb85c; /* Zielona ramka dla akcentu */
-  padding-left: 10px; /* Odstęp od ramki */
+  border-left: 4px solid #5cb85c; 
+  padding-left: 10px; 
 }
 
 .zaplanowana {
-  background-color: #fcf8e3; /* Subtelniejszy żółty */
-  color: #8a6d3b; /* Ciemniejszy żółty/brązowy tekst */
+  background-color: #fcf8e3; 
+  color: #8a6d3b; 
   font-weight: 500;
-  border-left: 4px solid #f0ad4e; /* Pomarańczowa ramka dla akcentu */
-  padding-left: 10px; /* Odstęp od ramki */
+  border-left: 4px solid #f0ad4e; 
+  padding-left: 10px; 
 }

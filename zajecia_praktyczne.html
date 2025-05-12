@@ -16,13 +16,8 @@
   <div class="container">
     <h1 id="page-title">Moje Zajęcia Praktyczne</h1>
     
-    <!-- Sekcja dla Zalogowanego Ucznia -->
     <div id="student-schedule-view">
       <p style="text-align: center; margin-bottom: 20px;">Witaj <span id="student-name"></span>! Tutaj znajdziesz listę swoich zaplanowanych jazd.</p>
-      
-      <!-- Formularz rezerwacji (z main.js - jeśli istnieje) -->
-      <!-- Można by tu przenieść lub załączyć formularz rezerwacji z main.js/innego pliku -->
-      <!-- <div id="booking-form-placeholder"></div> -->
       
       <h2>Twoje zaplanowane jazdy:</h2>
       <div id="student-schedule-table-container">
@@ -35,18 +30,16 @@
               <th>Instruktor</th>
               <th>Pojazd</th>
               <th>Status</th>
-              <th>Akcja</th> <!-- Kolumna na odwołanie -->
+              <th>Akcja</th> 
             </tr>
           </thead>
           <tbody id="student-schedule-tbody">
-            <!-- Dane jazd zostaną załadowane dynamicznie -->
             <tr><td colspan="7">Ładowanie harmonogramu...</td></tr> 
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- Komunikat dla niezalogowanych/instruktorów -->
     <div id="unauthorized-view-student" style="display: none;">
         <p style="text-align: center; color: red;">Ta sekcja jest dostępna tylko dla zalogowanych uczniów.</p>
         <p style="text-align: center;">Jeśli jesteś instruktorem, przejdź do <a href="planowanie.html">Planu Jazd</a>.</p>
@@ -70,22 +63,13 @@
           pageTitle.textContent = 'Moje Zajęcia Praktyczne';
           document.getElementById('student-name').textContent = userName;
           studentView.style.display = 'block';
-          // Ukryj link "Plan Jazd" dla ucznia, jeśli nie chcemy by tam zaglądał
-          // document.getElementById('nav-plan').style.display = 'none'; 
           loadStudentSchedule(userId);
-          // Tutaj można dodać kod inicjalizujący formularz rezerwacji, jeśli jest w tym pliku
-          // initBookingForm(); 
         } else {
-          // Instruktor lub nieznana rola
           studentView.style.display = 'none';
           unauthorizedView.style.display = 'block';
-          // Ukryjemy też menu specyficzne dla ucznia
-          document.getElementById('nav-info').style.display = 'none';
-          document.getElementById('nav-zajecia').style.display = 'none';
         }
       } else {
-        // Brak danych w sessionStorage - użytkownik niezalogowany
-         studentView.style.display = 'none';
+           studentView.style.display = 'none';
          unauthorizedView.style.display = 'block';
       }
     });
@@ -116,7 +100,6 @@
           } else {
             schedule.data.forEach(ride => {
               const row = tbody.insertRow();
-              // Sprawdź czy jazda już się odbyła, aby zdecydować czy pokazać przycisk odwołania
               const isPast = new Date(ride.data_jazdy + 'T' + ride.godzina_od) < new Date();
               const cancelButton = (ride.odbyta || isPast) 
                 ? '' 
@@ -143,29 +126,14 @@
       }
     }
 
-    // Funkcja odwoływania jazdy (przykładowa)
     async function confirmCancel(rideId, button) {
-       // Można dodać sprawdzenie, czy można odwołać (np. nie później niż 24h przed)
-       // const rideDateTime = ... ;
-       // const now = new Date();
-       // if (rideDateTime - now < 24 * 60 * 60 * 1000) { alert("Nie można odwołać jazdy później niż 24h przed terminem."); return; }
-
       if (confirm("Czy na pewno chcesz odwołać tę jazdę?")) {
-        // Symulacja komunikacji z serwerem w celu odwołania
         console.log(`Wysyłanie żądania odwołania jazdy o ID: ${rideId}`);
-        // Tutaj docelowo byłoby zapytanie fetch do skryptu PHP (np. cancel_ride.php)
-        // np. await fetch('cancel_ride.php', { method: 'POST', body: JSON.stringify({ ride_id: rideId }) });
-        
-        // Po pomyślnym odwołaniu na serwerze, usuń wiersz
         let row = button.closest('tr');
         row.remove();
         alert("Jazda została odwołana (symulacja).");
-        // Można też ponownie załadować harmonogram: loadStudentSchedule(sessionStorage.getItem('userId'));
       }
     }
-
-    // Tutaj można wczytać/zainicjować formularz rezerwacji, np.:
-    // async function initBookingForm() { ... }
 
   </script>
 

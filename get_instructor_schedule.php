@@ -1,13 +1,12 @@
 <?php
 header('Content-Type: application/json');
 
-// Konfiguracja bazy danych (taka sama jak w login.php)
+
 $servername = "localhost";
 $username = "root";
-$password = ""; // Upewnij się, że hasło jest poprawne dla Twojego środowiska
+$password = ""; 
 $dbname = "szkola_jazdy";
 
-// Pobranie ID instruktora z danych POST
 $data = json_decode(file_get_contents('php://input'), true);
 $instructor_id = $data['instructor_id'] ?? null;
 
@@ -16,10 +15,8 @@ if (!$instructor_id) {
     exit;
 }
 
-// Nawiązanie połączenia z bazą danych
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// Sprawdzenie połączenia
 if ($conn->connect_error) {
     echo json_encode(['status' => 'error', 'message' => 'Błąd połączenia z bazą danych: ' . $conn->connect_error]);
     exit;
@@ -29,9 +26,6 @@ $schedule = [];
 $response = ['status' => 'error', 'message' => 'Nie udało się pobrać harmonogramu'];
 
 try {
-    // Zapytanie SQL pobierające jazdy dla danego instruktora
-    // Łączymy z tabelą uczniowie aby pobrać imię i nazwisko ucznia
-    // Łączymy z tabelą pojazdy (LEFT JOIN), aby pobrać rejestrację (jeśli jest przypisany)
     $sql = "SELECT 
                 j.data_jazdy, 
                 j.godzina_od, 
@@ -68,17 +62,12 @@ try {
     $stmt->close();
 
 } catch (Exception $e) {
-    // Zapisz błąd do logów serwera w realnej aplikacji
      error_log("Błąd w get_instructor_schedule.php: " . $e->getMessage());
      $response = ['status' => 'error', 'message' => 'Wystąpił błąd serwera przy pobieraniu harmonogramu.'];
-     // Możesz też zwrócić $e->getMessage() jeśli chcesz widzieć błąd w konsoli przeglądarki, ale nie rób tego w produkcji
-     // $response = ['status' => 'error', 'message' => $e->getMessage()];
 }
 
-// Zamknięcie połączenia
 $conn->close();
 
-// Zwrócenie odpowiedzi JSON
 echo json_encode($response);
 
 ?>
