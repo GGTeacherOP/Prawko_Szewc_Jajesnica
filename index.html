@@ -3,19 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Logowanie</title>
+  <title>Logowanie i Rejestracja</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="login-container">
-    <h2>Logowanie</h2>
-    <form id="login-form">
-      <input type="text" id="login" placeholder="Login" required><br>
-      <input type="password" id="password" placeholder="Hasło" required><br>
-      <button type="button" onclick="loginUser()">Zaloguj</button>
-      <p><a href="#">Nie pamiętam hasła</a></p>
-      <div id="notification" class="notification" style="display: none;"></div>
-    </form>
+  <div class="auth-container">
+    <div class="tabs">
+      <button class="tab-button active" onclick="switchTab('login')">Logowanie</button>
+      <button class="tab-button" onclick="switchTab('register')">Rejestracja</button>
+    </div>
+
+    <div id="login-form" class="form-container active">
+      <h2>Logowanie</h2>
+      <form onsubmit="event.preventDefault(); loginUser();">
+        <input type="text" id="login" placeholder="Login" required><br>
+        <input type="password" id="login-password" placeholder="Hasło" required><br>
+        <button type="submit">Zaloguj</button>
+        <p><a href="#" onclick="showResetPassword()">Nie pamiętam hasła</a></p>
+      </form>
+    </div>
+
+    <div id="register-form" class="form-container">
+      <h2>Rejestracja</h2>
+      <form onsubmit="event.preventDefault(); registerUser();">
+        <input type="text" id="reg-login" placeholder="Login" required><br>
+        <input type="password" id="reg-password" placeholder="Hasło" required><br>
+        <input type="password" id="reg-confirm-password" placeholder="Potwierdź hasło" required><br>
+        <input type="text" id="reg-name" placeholder="Imię" required><br>
+        <input type="text" id="reg-surname" placeholder="Nazwisko" required><br>
+        <input type="email" id="reg-email" placeholder="Email" required><br>
+        <select id="reg-role" required>
+          <option value="">Wybierz rolę</option>
+          <option value="Uczniem">Uczeń</option>
+          <option value="Instruktorem">Instruktor</option>
+        </select><br>
+        <button type="submit">Zarejestruj</button>
+      </form>
+    </div>
+
+    <div id="notification" class="notification" style="display: none;"></div>
   </div>
   <script src="main.js"></script>
 </body>

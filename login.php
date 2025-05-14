@@ -1,80 +1,60 @@
 <?php
 header('Content-Type: application/json');
 
-$servername = "localhost"; 
-$username = "root"; 
-$db_password = ""; 
-$dbname = "szkola_jazdy";
+try {
+    // Połączenie z bazą danych używając PDO
+    $db = new PDO('mysql:host=localhost;dbname=szkola_jazdy;charset=utf8', 'root', '');
+    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-$data = json_decode(file_get_contents('php://input'), true);
-$login = $data['login'] ?? null;
-$password = $data['password'] ?? null;
+    // Pobierz dane z żądania
+    $data = json_decode(file_get_contents('php://input'), true);
+    $login = $data['login'] ?? null;
+    $password = $data['password'] ?? null;
 
-if (!$login || !$password) {
-    echo json_encode(['status' => 'error', 'message' => 'Nie podano loginu lub hasła']);
-    exit;
-}
-
-$conn = new mysqli($servername, $username, $db_password, $dbname);
-
-if ($conn->connect_error) {
-    echo json_encode(['status' => 'error', 'message' => 'Błąd połączenia z bazą danych: ' . $conn->connect_error]);
-    exit;
-}
-
-$login = $conn->real_escape_string($login);
-
-$response = ['status' => 'error', 'message' => 'Nieprawidłowy login lub hasło'];
-
-$sql_uczen = "SELECT id, imie, nazwisko, haslo FROM uczniowie WHERE login = ?";
-$stmt_uczen = $conn->prepare($sql_uczen);
-$stmt_uczen->bind_param("s", $login);
-$stmt_uczen->execute();
-$result_uczen = $stmt_uczen->get_result();
-
-if ($result_uczen->num_rows > 0) {
-    $row = $result_uczen->fetch_assoc();
-    if ($password === $row['haslo']) { // Porównujemy z hasłem z bazy
-        $response = [
-            'status' => 'success',
-            'user' => [
-                'id' => $row['id'],
-                'imie' => $row['imie'],
-                'nazwisko' => $row['nazwisko'],
-                'rola' => 'Uczniem'
-            ]
-        ];
+    if (!$login || !$password) {
+        throw new Exception('Nie podano loginu lub hasła');
     }
-}
-$stmt_uczen->close();
 
-if ($response['status'] === 'error') {
-    $sql_instruktor = "SELECT id, imie, nazwisko, haslo FROM instruktorzy WHERE login = ?";
-    $stmt_instruktor = $conn->prepare($sql_instruktor);
-    $stmt_instruktor->bind_param("s", $login);
-    $stmt_instruktor->execute();
-    $result_instruktor = $stmt_instruktor->get_result();
+    // Pobierz dane użytkownika
+    $stmt = $db->prepare('SELECT u.id, u.haslo, u.rola, 
+        CASE 
+            WHEN u.rola = "Uczniem" THEN uc.imie
+            WHEN u.rola = "Instruktorem" THEN i.imie
+        END as imie,
+        CASE 
+            WHEN u.rola = "Uczniem" THEN uc.nazwisko
+            WHEN u.rola = "Instruktorem" THEN i.nazwisko
+        END as nazwisko
+        FROM uzytkownicy u
+        LEFT JOIN uczniowie uc ON u.id = uc.id_uzytkownika
+        LEFT JOIN instruktorzy i ON u.id = i.id_uzytkownika
+        WHERE u.login = ?');
+    
+    $stmt->execute([$login]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($result_instruktor->num_rows > 0) {
-        $row = $result_instruktor->fetch_assoc();
-        if ($password === $row['haslo']) { // Porównujemy z hasłem z bazy
-            $response = [
-                'status' => 'success',
-                'user' => [
-                    'id' => $row['id'], 
-                    'imie' => $row['imie'],
-                    'nazwisko' => $row['nazwisko'],
-                    'rola' => 'Instruktorem'
-                ]
-            ];
-        }
+    if (!$user) {
+        throw new Exception('Nieprawidłowy login lub hasło');
     }
-    $stmt_instruktor->close();
+
+    // Weryfikuj hasło
+    if (!password_verify($password, $user['haslo'])) {
+        throw new Exception('Nieprawidłowy login lub hasło');
+    }
+
+    // Przygotuj odpowiedź
+    echo json_encode([
+        'status' => 'success',
+        'userId' => $user['id'],
+        'userName' => $user['imie'] . ' ' . $user['nazwisko'],
+        'userRole' => $user['rola']
+    ]);
+
+} catch (Exception $e) {
+    http_response_code(400);
+    echo json_encode([
+        'status' => 'error',
+        'message' => $e->getMessage()
+    ]);
 }
-
-
-$conn->close();
-
-echo json_encode($response);
-
 ?>

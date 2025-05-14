@@ -3,6 +3,74 @@ let currentUserId = sessionStorage.getItem('userId');
 let currentUserRole = sessionStorage.getItem('userRole');
 let currentUserName = sessionStorage.getItem('userName');
 
+// Funkcja do przełączania między formularzami
+function switchTab(tabName) {
+    // Ukryj wszystkie formularze
+    document.querySelectorAll('.form-container').forEach(form => {
+        form.classList.remove('active');
+    });
+    
+    // Usuń klasę active ze wszystkich przycisków
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('active');
+    });
+    
+    // Pokaż wybrany formularz
+    document.getElementById(tabName + '-form').classList.add('active');
+    
+    // Dodaj klasę active do wybranego przycisku
+    document.querySelector(`button[onclick="switchTab('${tabName}')"]`).classList.add('active');
+}
+
+// Funkcja do rejestracji użytkownika
+async function registerUser() {
+    const login = document.getElementById('reg-login').value;
+    const password = document.getElementById('reg-password').value;
+    const confirmPassword = document.getElementById('reg-confirm-password').value;
+    const name = document.getElementById('reg-name').value;
+    const surname = document.getElementById('reg-surname').value;
+    const email = document.getElementById('reg-email').value;
+    const role = document.getElementById('reg-role').value;
+    
+    // Sprawdź czy hasła są takie same
+    if (password !== confirmPassword) {
+        showNotification('Hasła nie są identyczne', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('register.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                login,
+                password,
+                name,
+                surname,
+                email,
+                role
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            showNotification('Rejestracja udana! Możesz się teraz zalogować.', 'success');
+            // Przełącz na formularz logowania
+            switchTab('login');
+            // Wyczyść formularz rejestracji
+            document.querySelector('#register-form form').reset();
+        } else {
+            showNotification(data.message || 'Błąd rejestracji', 'error');
+        }
+    } catch (error) {
+        console.error('Błąd podczas rejestracji:', error);
+        showNotification('Błąd podczas rejestracji', 'error');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Aktualizuj globalne zmienne po załadowaniu DOM
     currentUserId = sessionStorage.getItem('userId');
@@ -64,35 +132,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 });
-
-// --- NOWA FUNKCJA ---
-// Funkcja do ładowania instruktorów do listy rozwijanej
-async function loadInstructors() {
-    const instructorSelect = document.getElementById('instructor');
-    if (!instructorSelect) return; // Sprawdzenie, czy element istnieje
-
-    try {
-        const response = await fetch('get_instructors.php');
-        const data = await response.json();
-
-        if (data.status === 'success') {
-            instructorSelect.innerHTML = '<option value="">-- Wybierz instruktora --</option>'; // Dodaj opcję domyślną
-            data.instructors.forEach(instructor => {
-                const option = document.createElement('option');
-                option.value = instructor.id; // Ustawiamy ID jako wartość
-                option.textContent = `${instructor.imie} ${instructor.nazwisko}`; // Tekst dla użytkownika
-                instructorSelect.appendChild(option);
-            });
-        } else {
-            console.error('Błąd ładowania instruktorów:', data.message);
-            instructorSelect.innerHTML = '<option value="">Błąd ładowania</option>';
-        }
-    } catch (error) {
-        console.error('Błąd sieci podczas ładowania instruktorów:', error);
-        instructorSelect.innerHTML = '<option value="">Błąd sieci</option>';
-    }
-}
-// --- KONIEC NOWEJ FUNKCJI ---
 
 // Funkcja do pobierania i wyświetlania lekcji
 async function fetchAndDisplayLessons() {
@@ -219,7 +258,6 @@ function displayInstructorLessons(lessons) {
     });
 }
 
-// --- NOWA FUNKCJA ---
 // Funkcja do odwoływania lekcji przez ucznia
 async function cancelLesson(lessonId) {
     if (!currentUserId) {
@@ -252,59 +290,11 @@ async function cancelLesson(lessonId) {
         }
     }
 }
-// --- KONIEC NOWEJ FUNKCJI ---
 
-// --- FUNKCJA DO AKTUALIZACJI NAWIGACJI ---
-function updateNavigation(userRole) {
-    const navInfo = document.getElementById('nav-info');
-    const navZajecia = document.getElementById('nav-zajecia');
-    const navPlan = document.getElementById('nav-plan');
-
-    // Ukryj wszystkie linki specyficzne dla roli na początku
-    if (navInfo) navInfo.style.display = 'none';
-    if (navZajecia) navZajecia.style.display = 'none';
-    if (navPlan) navPlan.style.display = 'none';
-
-    if (userRole === 'Uczniem') {
-        // Pokaż linki dla ucznia
-        if (navInfo) navInfo.style.display = 'inline'; 
-        if (navZajecia) navZajecia.style.display = 'inline';
-    } else if (userRole === 'Instruktorem') {
-        // Pokaż linki dla instruktora
-        if (navPlan) navPlan.style.display = 'inline';
-    } else {
-        // W przypadku braku roli lub nieznanej roli, nic specyficznego nie pokazujemy (tylko Wyloguj)
-        console.warn("updateNavigation: Nierozpoznana rola lub brak roli:", userRole);
-    }
-}
-// --- KONIEC FUNKCJI ---
-
-// Funkcja pokazująca popup powitalny
-function showWelcomePopup(userName) {
-    const popup = document.getElementById('welcome-popup');
-    if (popup) { 
-        popup.textContent = `Witaj, ${userName}! Zostałeś pomyślnie zalogowany.`;
-        popup.style.display = 'block';
-        // Ukryj popup po kilku sekundach
-        setTimeout(() => { popup.style.display = 'none'; }, 3000); // Ukryj po 3 sekundach
-    } else {
-        console.warn("Element 'welcome-popup' nie został znaleziony.");
-    }
-}
-
+// Funkcja do logowania użytkownika
 async function loginUser() {
-    const loginInput = document.getElementById('login');
-    const passwordInput = document.getElementById('password');
-    const notificationDiv = document.getElementById('notification');
-
-    const login = loginInput.value;
-    const password = passwordInput.value;
-
-    if (!login || !password) {
-        notificationDiv.textContent = 'Login i hasło są wymagane!';
-        notificationDiv.style.display = 'block';
-        return;
-    }
+    const login = document.getElementById('login').value;
+    const password = document.getElementById('login-password').value;
 
     try {
         const response = await fetch('login.php', {
@@ -312,47 +302,40 @@ async function loginUser() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ login, password })
+            body: JSON.stringify({
+                login: login,
+                password: password
+            })
         });
 
         const data = await response.json();
 
         if (data.status === 'success') {
-            // Zapisz dane w sessionStorage
-            sessionStorage.setItem('userId', data.user.id);
-            sessionStorage.setItem('userRole', data.user.rola); // Upewnij się, że 'rola' jest poprawną nazwą z PHP
-            sessionStorage.setItem('userName', data.user.imie + ' ' + data.user.nazwisko);
-            sessionStorage.setItem('welcomeMessage', `Witaj, ${data.user.imie}! Zostałeś pomyślnie zalogowany.`);
+            // Zapisz dane użytkownika
+            sessionStorage.setItem('userId', data.userId);
+            sessionStorage.setItem('userRole', data.userRole);
+            sessionStorage.setItem('userName', data.userName);
 
+            // Aktualizuj globalne zmienne
+            currentUserId = data.userId;
+            currentUserRole = data.userRole;
+            currentUserName = data.userName;
 
-            // Zaktualizuj globalne zmienne JavaScript
-            currentUserId = data.user.id;
-            currentUserRole = data.user.rola;
-            currentUserName = data.user.imie + ' ' + data.user.nazwisko;
+            // Pokaż popup powitalny
+            showWelcomePopup(data.userName);
 
-            // Zaktualizuj nawigację
-            updateNavigation(currentUserRole);
-
-            // Wyświetl powitanie i zdecyduj o przekierowaniu
-            showWelcomePopup(currentUserName);
-
-            // Decyzja o przekierowaniu na podstawie roli
-            if (data.user.rola === 'Uczniem') {
-                setTimeout(() => { window.location.href = 'zajecia_praktyczne.html'; }, 1500); // Przekieruj ucznia
-            } else if (data.user.rola === 'Instruktorem') {
-                setTimeout(() => { window.location.href = 'planowanie.html'; }, 1500); // Przekieruj instruktora
-            } else {
-                notificationDiv.textContent = 'Nieznana rola użytkownika.';
-                notificationDiv.style.display = 'block';
+            // Przekieruj użytkownika w zależności od roli
+            if (data.userRole === 'Uczniem') {
+                window.location.href = 'planowanie.html';
+            } else if (data.userRole === 'Instruktorem') {
+                window.location.href = 'planowanie.html';
             }
         } else {
-            notificationDiv.textContent = data.message || 'Błąd logowania. Spróbuj ponownie.';
-            notificationDiv.style.display = 'block';
+            showNotification(data.message || 'Błąd logowania', 'error');
         }
     } catch (error) {
-        console.error('Błąd logowania:', error);
-        notificationDiv.textContent = 'Wystąpił błąd podczas próby logowania.';
-        notificationDiv.style.display = 'block';
+        console.error('Błąd podczas logowania:', error);
+        showNotification('Błąd podczas logowania', 'error');
     }
 }
 
