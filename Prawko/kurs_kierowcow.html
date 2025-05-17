@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kursy Kierowców Zawodowych - Linia Nauka Jazdy</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.init({
+                duration: 1000,
+                once: true,
+                offset: 100
+            });
+        });
+
+        function checkLoginAndRedirect(event) {
+            event.preventDefault();
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            if (!isLoggedIn) {
+                window.location.href = 'login.html';
+            }
+        }
+    </script>
+</head>
+<body>
+    <header class="scroll-up">
+        <nav>
+            <div class="logo">
+                <img src="logo.png" alt="Linia Nauka Jazdy Logo">
+            </div>
+            <ul>
+                <li><a href="index.html">Strona Główna</a></li>
+                <li><a href="kurs_prawa_jazdy.html">Kurs Prawa Jazdy</a></li>
+                <li><a href="kurs_instruktorow.html">Kursy dla Instruktorów</a></li>
+                <li><a href="kurs_kierowcow.html" class="active">Kursy Kierowców Zawodowych</a></li>
+                <li><a href="kurs_operatorow.html">Kursy Operatorów Maszyn</a></li>
+                <li><a href="badania.html">Badania</a></li>
+                <li><a href="oplaty.html">Opłaty</a></li>
+                <li><a href="kontakt.html">Kontakt</a></li>
+                <li><a href="login.html">Zaloguj</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="page-header" data-aos="fade-down">
+            <h1>Kursy Kierowców Zawodowych</h1>
+            <p>Profesjonalne szkolenia dla kierowców zawodowych z kwalifikacją wstępną i okresową</p>
+        </section>
+
+        <section class="course-content">
+            <div class="course-intro" data-aos="fade-up">
+                <h2>Kompleksowe Szkolenia Zawodowe</h2>
+                <p>Oferujemy pełen zakres szkoleń dla kierowców zawodowych, zgodnie z najnowszymi przepisami i standardami branżowymi. Nasze kursy są uznawane w całej Unii Europejskiej.</p>
+                
+                <div class="market-info" data-aos="fade-up" data-aos-delay="100">
+                    <h3>Rynek Pracy dla Kierowców Zawodowych</h3>
+                    <ul>
+                        <li>Stały wzrost zapotrzebowania na kierowców</li>
+                        <li>Atrakcyjne wynagrodzenie (6000-12000 PLN)</li>
+                        <li>Możliwość pracy w kraju i za granicą</li>
+                        <li>Stabilne zatrudnienie</li>
+                        <li>Różnorodne specjalizacje transportowe</li>
+                        <li>Rozwój kariery w logistyce</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="qualification-types">
+                <h2 data-aos="fade-up">Rodzaje Kwalifikacji</h2>
+                <div class="qual-grid">
+                    <div class="qual-item" data-aos="fade-up" data-aos-delay="100">
+                        <h3>Kwalifikacja Wstępna</h3>
+                        <p>Podstawowe uprawnienia dla nowych kierowców zawodowych</p>
+                        <ul>
+                            <li>280 godzin szkolenia</li>
+                            <li>Teoria i praktyka</li>
+                            <li>Jazda w warunkach specjalnych</li>
+                            <li>Przepisy transportowe</li>
+                            <li>Czas pracy kierowców</li>
+                            <li>Pierwsza pomoc</li>
+                        </ul>
+                    </div>
+                    <div class="qual-item" data-aos="fade-up" data-aos-delay="200">
+                        <h3>Kwalifikacja Wstępna Przyspieszona</h3>
+                        <p>Dla osób z doświadczeniem w prowadzeniu pojazdów</p>
+                        <ul>
+                            <li>140 godzin szkolenia</li>
+                            <li>Skrócony program</li>
+                            <li>Intensywne zajęcia</li>
+                            <li>Praktyka zawodowa</li>
+                            <li>Egzamin państwowy</li>
+                            <li>Szybsza ścieżka kariery</li>
+                        </ul>
+                    </div>
+                    <div class="qual-item" data-aos="fade-up" data-aos-delay="300">
+                        <h3>Kwalifikacja Okresowa</h3>
+                        <p>Obowiązkowe szkolenie co 5 lat</p>
+                        <ul>
+                            <li>35 godzin szkolenia</li>
+                            <li>Aktualizacja wiedzy</li>
+                            <li>Nowe przepisy</li>
+                            <li>Bezpieczeństwo</li>
+                            <li>Eco-driving</li>
+                            <li>Obsługa tachografów</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <section class="specializations">
+                <h2 data-aos="fade-up">Specjalizacje Transportowe</h2>
+                <div class="spec-grid">
+                    <div class="spec-item" data-aos="fade-right" data-aos-delay="100">
+                        <h3>Transport ADR</h3>
+                        <ul>
+                            <li>Materiały niebezpieczne</li>
+                            <li>Cysterny</li>
+                            <li>Klasy zagrożeń</li>
+                            <li>Procedury bezpieczeństwa</li>
+                            <li>Dokumentacja przewozowa</li>
+                        </ul>
+                    </div>
+                    <div class="spec-item" data-aos="fade-up" data-aos-delay="200">
+                        <h3>Transport Chłodniczy</h3>
+                        <ul>
+                            <li>Obsługa agregatów</li>
+                            <li>Łańcuch chłodniczy</li>
+                            <li>Monitoring temperatury</li>
+                            <li>Przepisy sanitarne</li>
+                            <li>Dokumentacja HACCP</li>
+                        </ul>
+                    </div>
+                    <div class="spec-item" data-aos="fade-left" data-aos-delay="300">
+                        <h3>Transport Międzynarodowy</h3>
+                        <ul>
+                            <li>Dokumenty międzynarodowe</li>
+                            <li>Przepisy celne</li>
+                            <li>Systemy nawigacji</li>
+                            <li>Planowanie tras</li>
+                            <li>Komunikacja w języku obcym</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="additional-qualifications">
+                <h2 data-aos="fade-up">Dodatkowe Uprawnienia</h2>
+                <div class="add-qual-content">
+                    <div class="add-qual-item" data-aos="fade-right">
+                        <h3>Eco-driving</h3>
+                        <ul>
+                            <li>Ekonomiczna jazda</li>
+                            <li>Redukcja zużycia paliwa</li>
+                            <li>Techniki hamowania</li>
+                            <li>Optymalizacja trasy</li>
+                        </ul>
+                    </div>
+                    <div class="add-qual-item" data-aos="fade-up">
+                        <h3>Przewóz Osób</h3>
+                        <ul>
+                            <li>Obsługa pasażerów</li>
+                            <li>Bezpieczeństwo</li>
+                            <li>Pierwsza pomoc</li>
+                            <li>Sytuacje kryzysowe</li>
+                        </ul>
+                    </div>
+                    <div class="add-qual-item" data-aos="fade-left">
+                        <h3>HDS</h3>
+                        <ul>
+                            <li>Obsługa dźwigów</li>
+                            <li>Załadunek i rozładunek</li>
+                            <li>BHP przy pracach</li>
+                            <li>Uprawnienia UDT</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <div class="pricing-tables">
+                <div class="pricing-table" data-aos="fade-up" data-aos-delay="100">
+                    <div class="pricing-header">
+                        <h3>Kwalifikacja Wstępna</h3>
+                        <div class="pricing-price">3500 PLN</div>
+                    </div>
+                    <div class="pricing-features">
+                        <ul>
+                            <li>280 godzin szkolenia</li>
+                            <li>Materiały szkoleniowe</li>
+                            <li>Zajęcia praktyczne</li>
+                            <li>Egzamin wewnętrzny</li>
+                            <li>Wsparcie w dokumentacji</li>
+                        </ul>
+                    </div>
+                    <div class="pricing-footer">
+                        <a href="#" class="btn primary" onclick="checkLoginAndRedirect(event)">Zapisz się</a>
+                    </div>
+                </div>
+                <div class="pricing-table" data-aos="fade-up" data-aos-delay="200">
+                    <div class="pricing-header">
+                        <h3>Kwalifikacja Okresowa</h3>
+                        <div class="pricing-price">1200 PLN</div>
+                    </div>
+                    <div class="pricing-features">
+                        <ul>
+                            <li>35 godzin szkolenia</li>
+                            <li>Aktualne materiały</li>
+                            <li>Certyfikat ukończenia</li>
+                            <li>Konsultacje z ekspertami</li>
+                            <li>Elastyczne terminy</li>
+                        </ul>
+                    </div>
+                    <div class="pricing-footer">
+                        <a href="#" class="btn primary" onclick="checkLoginAndRedirect(event)">Zapisz się</a>
+                    </div>
+                </div>
+                <div class="pricing-table" data-aos="fade-up" data-aos-delay="300">
+                    <div class="pricing-header">
+                        <h3>Kurs ADR</h3>
+                        <div class="pricing-price">1800 PLN</div>
+                    </div>
+                    <div class="pricing-features">
+                        <ul>
+                            <li>Szkolenie podstawowe</li>
+                            <li>Cysterny</li>
+                            <li>Materiały wybuchowe</li>
+                            <li>Materiały radioaktywne</li>
+                            <li>Egzamin państwowy</li>
+                        </ul>
+                    </div>
+                    <div class="pricing-footer">
+                        <a href="#" class="btn primary" onclick="checkLoginAndRedirect(event)">Zapisz się</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="course-requirements">
+                <h2 data-aos="fade-up">Dofinansowania i Wsparcie</h2>
+                <div class="requirements-grid">
+                    <div class="requirement-card" data-aos="fade-up" data-aos-delay="100">
+                        <h3><i class="fas fa-money-bill-wave"></i> Dofinansowanie KFS</h3>
+                        <p>Możliwość uzyskania dofinansowania z Krajowego Funduszu Szkoleniowego do 80% wartości kursu.</p>
+                    </div>
+                    <div class="requirement-card" data-aos="fade-up" data-aos-delay="200">
+                        <h3><i class="fas fa-handshake"></i> Współpraca z Firmami</h3>
+                        <p>Specjalne warunki dla firm transportowych i grup zorganizowanych.</p>
+                    </div>
+                    <div class="requirement-card" data-aos="fade-up" data-aos-delay="300">
+                        <h3><i class="fas fa-file-contract"></i> Raty 0%</h3>
+                        <p>Możliwość rozłożenia płatności na raty 0% bez dodatkowych kosztów.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <div class="cta-content" data-aos="zoom-in">
+                <h2>Rozpocznij Karierę Kierowcy Zawodowego</h2>
+                <p>Zdobądź kwalifikacje i rozpocznij pracę w branży transportowej!</p>
+                <a href="kontakt.html" class="hero-btn primary">Skontaktuj się z Nami</a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="contact-info" data-aos="fade-right">
+                <h4>Kontakt</h4>
+                <p>Telefon: +48 123 456 789</p>
+                <p>Email: biuro@linianauka.pl</p>
+                <p>Adres: ul. Przykładowa 123, 00-000 Warszawa</p>
+            </div>
+            <div class="social-links" data-aos="fade-up">
+                <a href="#" class="social-icon"><i class="fab fa-facebook"></i></a>
+                <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+            </div>
+            <div class="copyright" data-aos="fade-left">
+                <p>&copy; 2024 Linia Nauka Jazdy. Wszystkie prawa zastrzeżone.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

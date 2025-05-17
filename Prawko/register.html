@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rejestracja - Linia Nauka Jazdy</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .register-container {
+            max-width: 500px;
+            margin: 100px auto;
+            padding: 2rem;
+            background-color: var(--white);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .register-form input, .register-form select {
+            width: 100%;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            border: 1px solid var(--light-blue);
+            border-radius: 5px;
+        }
+
+        .register-form input.error {
+            border-color: red;
+        }
+
+        .register-form .btn {
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .login-link a {
+            color: var(--primary-blue);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <h2>Zarejestruj się</h2>
+        <form id="registration-form" class="register-form">
+            <input type="text" name="imie" placeholder="Imię" required>
+            <input type="text" name="nazwisko" placeholder="Nazwisko" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="tel" name="telefon" placeholder="Numer telefonu" required>
+            <input type="date" name="data_urodzenia" placeholder="Data urodzenia" required>
+            <select name="kategoria_prawa_jazdy" required>
+                <option value="">Wybierz kategorię prawa jazdy</option>
+                <option value="B">Kategoria B</option>
+                <option value="A">Kategoria A</option>
+                <option value="C">Kategoria C</option>
+                <option value="D">Kategoria D</option>
+            </select>
+            <input type="password" name="haslo" placeholder="Hasło" required>
+            <input type="password" name="potwierdz_haslo" placeholder="Potwierdź hasło" required>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="regulamin" name="regulamin" required>
+                <label for="regulamin">Akceptuję regulamin i politykę prywatności</label>
+            </div>
+
+            <button type="submit" class="btn">Zarejestruj się</button>
+        </form>
+        <div class="login-link">
+            <p>Masz już konto? <a href="login.html">Zaloguj się</a></p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        document.getElementById('registration-form').addEventListener('submit', function(e) {
+            const haslo = this.querySelector('input[name="haslo"]');
+            const potwierdz_haslo = this.querySelector('input[name="potwierdz_haslo"]');
+
+            if (haslo.value !== potwierdz_haslo.value) {
+                alert('Hasła nie są takie same');
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>
