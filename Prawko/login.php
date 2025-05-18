@@ -72,7 +72,7 @@ session_start();
             </div>
         <?php endif; ?>
         <form action="login_handler.php" method="POST" class="login-form">
-            <input type="text" name="login" placeholder="Login" required>
+            <input type="email" name="email" placeholder="Email" required>
             <input type="password" name="haslo" placeholder="Hasło" required>
             <button type="submit" class="btn">Zaloguj</button>
         </form>

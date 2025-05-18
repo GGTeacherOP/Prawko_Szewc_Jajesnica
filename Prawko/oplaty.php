@@ -75,7 +75,7 @@ session_start();
                     </div>
                     <div class="pricing-footer">
                         <?php if(isset($_SESSION['user_id'])): ?>
-                            <a href="zapisz_kurs.php?typ=podstawowy" class="btn primary">Zapisz się</a>
+                            <a href="zapisz_kurs.php?kategoria=B" class="btn primary">Zapisz się</a>
                         <?php else: ?>
                             <a href="login.php" class="btn primary">Zaloguj się aby się zapisać</a>
                         <?php endif; ?>
@@ -98,7 +98,7 @@ session_start();
                     </div>
                     <div class="pricing-footer">
                         <?php if(isset($_SESSION['user_id'])): ?>
-                            <a href="zapisz_kurs.php?typ=rozszerzony" class="btn primary">Zapisz się</a>
+                            <a href="zapisz_kurs.php?kategoria=C" class="btn primary">Zapisz się</a>
                         <?php else: ?>
                             <a href="login.php" class="btn primary">Zaloguj się aby się zapisać</a>
                         <?php endif; ?>
@@ -121,7 +121,7 @@ session_start();
                     </div>
                     <div class="pricing-footer">
                         <?php if(isset($_SESSION['user_id'])): ?>
-                            <a href="zapisz_kurs.php?typ=kwalifikacja" class="btn primary">Zapisz się</a>
+                            <a href="zapisz_kurs.php?kategoria=D" class="btn primary">Zapisz się</a>
                         <?php else: ?>
                             <a href="login.php" class="btn primary">Zaloguj się aby się zapisać</a>
                         <?php endif; ?>

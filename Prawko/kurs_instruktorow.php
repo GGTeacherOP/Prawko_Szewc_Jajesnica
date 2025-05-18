@@ -198,40 +198,11 @@ session_start();
 
             <div class="pricing-tables">
                 <div class="pricing-table" data-aos="fade-up" data-aos-delay="100">
-                    <div class="pricing-header">
-                        <h3>Kurs Podstawowy</h3>
-                        <div class="pricing-price">6500 PLN</div>
-                    </div>
-                    <div class="pricing-features">
-                        <ul>
-                            <li>140 godzin teorii</li>
-                            <li>60 godzin praktyki</li>
-                            <li>Materiały szkoleniowe</li>
-                            <li>Praktyki pedagogiczne</li>
-                            <li>Egzamin wewnętrzny</li>
-                        </ul>
-                    </div>
-                    <div class="pricing-footer">
-                        <a href="#" class="btn primary" onclick="checkLoginAndRedirect(event)">Zapisz się</a>
-                    </div>
-                </div>
-                <div class="pricing-table" data-aos="fade-up" data-aos-delay="200">
-                    <div class="pricing-header">
-                        <h3>Kurs Rozszerzony</h3>
-                        <div class="pricing-price">8500 PLN</div>
-                    </div>
-                    <div class="pricing-features">
-                        <ul>
-                            <li>Wszystko z kursu podstawowego</li>
-                            <li>Dodatkowe 20h praktyki</li>
-                            <li>Warsztaty z psychologii</li>
-                            <li>Szkolenie z pierwszej pomocy</li>
-                            <li>Gwarancja zdania egzaminu</li>
-                        </ul>
-                    </div>
-                    <div class="pricing-footer">
-                        <a href="#" class="btn primary" onclick="checkLoginAndRedirect(event)">Zapisz się</a>
-                    </div>
+                    <?php
+                    require_once 'config.php';
+                    require_once 'course_enrollment_button.php';
+                    displayEnrollmentButton('Instruktorzy', $conn);
+                    ?>
                 </div>
             </div>
         </section>

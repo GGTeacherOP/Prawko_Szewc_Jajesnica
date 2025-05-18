@@ -13,14 +13,16 @@ function sanitize_input($data) {
 // Check if form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Sanitize inputs
-    $login = sanitize_input($_POST['login']);
+    $email = sanitize_input($_POST['email']);
     $haslo = $_POST['haslo'];
 
     // Validate inputs
     $errors = [];
 
-    if (empty($login)) {
-        $errors[] = "Login jest wymagany.";
+    if (empty($email)) {
+        $errors[] = "Email jest wymagany.";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = "Nieprawidłowy format emaila.";
     }
 
     if (empty($haslo)) {
@@ -29,34 +31,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // If no validation errors, proceed with login
     if (empty($errors)) {
-        // Prepare SQL statement to check user credentials
-        $login_query = "SELECT id, imie, nazwisko, haslo FROM uzytkownicy WHERE login = ?";
-        
-        $stmt = $conn->prepare($login_query);
-        $stmt->bind_param("s", $login);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        try {
+            // Pobierz użytkownika z bazy
+            $stmt = $conn->prepare("SELECT id, haslo, rola FROM uzytkownicy WHERE email = ?");
+            $stmt->bind_param("s", $email);
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-        if ($result->num_rows === 1) {
-            $user = $result->fetch_assoc();
-            
-            // Verify password
-            if (password_verify($haslo, $user['haslo'])) {
-                // Login successful
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['user_name'] = $user['imie'] . ' ' . $user['nazwisko'];
+            if ($result->num_rows === 1) {
+                $user = $result->fetch_assoc();
                 
-                // Redirect to dashboard or home page
-                header("Location: dashboard.php");
-                exit();
+                if (password_verify($haslo, $user['haslo'])) {
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['rola'] = $user['rola'];
+                    
+                    // Przekieruj w zależności od roli
+                    if ($user['rola'] === 'instruktor') {
+                        header("Location: panel_instruktora.php");
+                    } else {
+                        header("Location: dashboard.php");
+                    }
+                    exit();
+                } else {
+                    throw new Exception("Nieprawidłowe hasło.");
+                }
             } else {
-                $errors[] = "Nieprawidłowe hasło.";
+                throw new Exception("Nie znaleziono użytkownika o podanym emailu.");
             }
-        } else {
-            $errors[] = "Użytkownik o podanym loginie nie istnieje.";
+        } catch (Exception $e) {
+            $_SESSION['error_message'] = $e->getMessage();
+            header("Location: login.php");
+            exit();
         }
-
-        $stmt->close();
     }
 
     // If there are errors, redirect back to login with error messages

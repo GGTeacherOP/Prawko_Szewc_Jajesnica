@@ -230,7 +230,7 @@ session_start();
                     </ul>
                     <div class="course-actions">
                         <?php if(isset($_SESSION['user_id'])): ?>
-                            <a href="zapisz_kurs.php?kategoria=prawo_jazdy" class="btn primary">Zapisz się na kurs</a>
+                            <a href="zapisz_kurs.php?kategoria=B" class="btn primary">Zapisz się na kurs</a>
                         <?php else: ?>
                             <a href="login.php" class="btn primary">Zaloguj się aby się zapisać</a>
                         <?php endif; ?>
@@ -250,13 +250,12 @@ session_start();
                     </ul>
                     <div class="course-actions">
                         <?php if(isset($_SESSION['user_id'])): ?>
-                            <a href="zapisz_kurs.php?kategoria=prawo_jazdy" class="btn primary">Zapisz się na kurs</a>
+                            <a href="zapisz_kurs.php?kategoria=A" class="btn primary">Zapisz się na kurs</a>
                         <?php else: ?>
                             <a href="login.php" class="btn primary">Zaloguj się aby się zapisać</a>
                         <?php endif; ?>
                     </div>
                 </div>
-
                 <div class="price-card" data-aos="fade-up" data-aos-delay="300">
                     <h3>Kategoria C</h3>
                     <p class="price">3500 PLN</p>
@@ -270,7 +269,7 @@ session_start();
                     </ul>
                     <div class="course-actions">
                         <?php if(isset($_SESSION['user_id'])): ?>
-                            <a href="zapisz_kurs.php?kategoria=prawo_jazdy" class="btn primary">Zapisz się na kurs</a>
+                            <a href="zapisz_kurs.php?kategoria=C" class="btn primary">Zapisz się na kurs</a>
                         <?php else: ?>
                             <a href="login.php" class="btn primary">Zaloguj się aby się zapisać</a>
                         <?php endif; ?>

@@ -1056,6 +1056,7 @@ footer {
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2rem;
     margin: 3rem 0;
+    padding: 0 1rem;
 }
 
 .pricing-table {
@@ -1063,57 +1064,59 @@ footer {
     border-radius: 10px;
     box-shadow: 0 2px 15px rgba(0,0,0,0.1);
     overflow: hidden;
-    transition: all 0.3s ease;
-    position: relative;
-    animation: fadeIn 0.5s ease-out;
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
 }
 
 .pricing-table:hover {
-    transform: translateY(-10px) scale(1.02);
+    transform: translateY(-5px);
     box-shadow: 0 5px 25px rgba(0,0,0,0.2);
 }
 
 .pricing-header {
-    background: linear-gradient(135deg, var(--secondary-color), var(--accent-color-4));
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     color: white;
     padding: 2rem;
     text-align: center;
-    position: relative;
-    overflow: hidden;
-}
-
-.pricing-table:nth-child(2) .pricing-header {
-    background: linear-gradient(135deg, var(--accent-color), var(--accent-color-2));
-}
-
-.pricing-table:nth-child(3) .pricing-header {
-    background: linear-gradient(135deg, var(--accent-color-2), var(--accent-color-3));
 }
 
 .pricing-header h3 {
+    margin: 0;
     font-size: 1.5rem;
-    margin-bottom: 0.5rem;
+    font-weight: 600;
 }
 
-.pricing-price {
-    font-size: 2.5rem;
-    font-weight: bold;
-    margin: 1rem 0;
-    animation: pulse 2s infinite;
+.enrollment-section {
+    padding: 1.5rem;
+    text-align: center;
+    background: #f8f9fa;
+}
+
+.course-price {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
 }
 
 .pricing-features {
-    padding: 2rem;
+    padding: 1.5rem;
+    flex-grow: 1;
 }
 
 .pricing-features ul {
     list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .pricing-features li {
-    margin-bottom: 1rem;
-    padding-left: 1.5rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #eee;
+    color: var(--text-color);
     position: relative;
+    padding-left: 1.5rem;
 }
 
 .pricing-features li:before {
@@ -1123,10 +1126,82 @@ footer {
     left: 0;
 }
 
-.pricing-footer {
-    padding: 2rem;
+.pricing-features li:last-child {
+    border-bottom: none;
+}
+
+.btn.primary {
+    display: inline-block;
+    padding: 0.8rem 1.5rem;
+    background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+    color: white;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
     text-align: center;
-    background-color: var(--light-gray);
+    width: auto;
+    min-width: 200px;
+}
+
+.btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.error-messages {
+    margin-bottom: 20px;
+}
+
+.error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+}
+
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #c3e6cb;
+    border-radius: 4px;
+}
+
+.registration-form {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.checkbox-group {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.instructor-section {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 4px;
+}
+
+#instructor_fields {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
 }
 
 /* Timeline */

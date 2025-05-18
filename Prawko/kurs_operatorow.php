@@ -213,27 +213,30 @@ session_start();
             <div class="pricing-tables">
                 <div class="pricing-table" data-aos="fade-up" data-aos-delay="100">
                     <div class="pricing-header">
-                        <h3>Kurs Podstawowy</h3>
-                        <div class="pricing-price">2200 PLN</div>
+                        <h3>Kurs Koparki</h3>
                     </div>
+                    <?php
+                    require_once 'config.php';
+                    require_once 'course_enrollment_button.php';
+                    displayEnrollmentButton('Operatorzy Maszyn', $conn, 'Kurs Operatora Koparki');
+                    ?>
                     <div class="pricing-features">
                         <ul>
-                            <li>Jedna specjalność</li>
-                            <li>40 godzin szkolenia</li>
+                            <li>40 godzin teorii</li>
+                            <li>60 godzin praktyki</li>
                             <li>Materiały szkoleniowe</li>
-                            <li>Zajęcia praktyczne</li>
                             <li>Egzamin UDT</li>
+                            <li>Certyfikat operatora</li>
                         </ul>
-                    </div>
-                    <div class="pricing-footer">
-                        <a href="#" class="btn primary" onclick="checkLoginAndRedirect(event)">Zapisz się</a>
                     </div>
                 </div>
                 <div class="pricing-table" data-aos="fade-up" data-aos-delay="200">
                     <div class="pricing-header">
                         <h3>Kurs Rozszerzony</h3>
-                        <div class="pricing-price">3800 PLN</div>
                     </div>
+                    <?php
+                    displayEnrollmentButton('Operatorzy Maszyn', $conn, 'Kurs Operatora - Rozszerzony');
+                    ?>
                     <div class="pricing-features">
                         <ul>
                             <li>Dwie specjalności</li>
@@ -243,26 +246,22 @@ session_start();
                             <li>Egzaminy UDT</li>
                         </ul>
                     </div>
-                    <div class="pricing-footer">
-                        <a href="#" class="btn primary" onclick="checkLoginAndRedirect(event)">Zapisz się</a>
-                    </div>
                 </div>
                 <div class="pricing-table" data-aos="fade-up" data-aos-delay="300">
                     <div class="pricing-header">
-                        <h3>Pakiet Premium</h3>
-                        <div class="pricing-price">5500 PLN</div>
+                        <h3>Kurs HDS</h3>
                     </div>
+                    <?php
+                    displayEnrollmentButton('Operatorzy Maszyn', $conn, 'Kurs Operatora HDS');
+                    ?>
                     <div class="pricing-features">
                         <ul>
-                            <li>Trzy specjalności</li>
-                            <li>120 godzin szkolenia</li>
-                            <li>Materiały szkoleniowe</li>
-                            <li>Zajęcia praktyczne</li>
-                            <li>Egzaminy UDT</li>
+                            <li>Obsługa dźwigów</li>
+                            <li>Załadunek i rozładunek</li>
+                            <li>BHP przy pracach</li>
+                            <li>Uprawnienia UDT</li>
+                            <li>Certyfikat operatora</li>
                         </ul>
-                    </div>
-                    <div class="pricing-footer">
-                        <a href="#" class="btn primary" onclick="checkLoginAndRedirect(event)">Zapisz się</a>
                     </div>
                 </div>
             </div>
