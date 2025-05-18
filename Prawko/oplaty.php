@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -16,16 +19,6 @@
                 offset: 100
             });
         });
-
-        function checkLoginAndRedirect(event) {
-            event.preventDefault();
-            // Check if user is logged in (this is a placeholder - implement actual check)
-            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-            if (!isLoggedIn) {
-                window.location.href = 'login.html';
-            }
-            // If logged in, do nothing for now
-        }
     </script>
 </head>
 <body>
@@ -35,15 +28,20 @@
                 <img src="logo.png" alt="Linia Nauka Jazdy Logo">
             </div>
             <ul>
-                <li><a href="index.html">Strona Główna</a></li>
-                <li><a href="kurs_prawa_jazdy.html">Kurs Prawa Jazdy</a></li>
-                <li><a href="kurs_instruktorow.html">Kursy dla Instruktorów</a></li>
-                <li><a href="kurs_kierowcow.html">Kursy Kierowców Zawodowych</a></li>
-                <li><a href="kurs_operatorow.html">Kursy Operatorów Maszyn</a></li>
-                <li><a href="badania.html">Badania</a></li>
-                <li><a href="oplaty.html" class="active">Opłaty</a></li>
-                <li><a href="kontakt.html">Kontakt</a></li>
-                <li><a href="login.html">Zaloguj</a></li>
+                <li><a href="index.php">Strona Główna</a></li>
+                <li><a href="kurs_prawa_jazdy.php">Kurs Prawa Jazdy</a></li>
+                <li><a href="kurs_instruktorow.php">Kursy dla Instruktorów</a></li>
+                <li><a href="kurs_kierowcow.php">Kursy Kierowców Zawodowych</a></li>
+                <li><a href="kurs_operatorow.php">Kursy Operatorów Maszyn</a></li>
+                <li><a href="badania.php">Badania</a></li>
+                <li><a href="oplaty.php" class="active">Opłaty</a></li>
+                <li><a href="kontakt.php">Kontakt</a></li>
+                <?php if(isset($_SESSION['user_id'])): ?>
+                    <li><a href="dashboard.php">Panel</a></li>
+                    <li><a href="logout.php">Wyloguj</a></li>
+                <?php else: ?>
+                    <li><a href="login.php">Zaloguj</a></li>
+                <?php endif; ?>
             </ul>
         </nav>
     </header>
@@ -63,7 +61,7 @@
             <div class="pricing-tables">
                 <div class="pricing-table" data-aos="fade-up" data-aos-delay="100">
                     <div class="pricing-header">
-                        <h3>Prawo Jazdy kat. B</h3>
+                        <h3>Kurs Podstawowy</h3>
                         <div class="pricing-price">2500 PLN</div>
                     </div>
                     <div class="pricing-features">
@@ -71,31 +69,39 @@
                             <li>30 godzin teorii</li>
                             <li>30 godzin praktyki</li>
                             <li>Materiały szkoleniowe</li>
-                            <li>E-learning</li>
                             <li>Egzamin wewnętrzny</li>
+                            <li>Wsparcie instruktora</li>
                         </ul>
                     </div>
                     <div class="pricing-footer">
-                        <a href="#" class="btn primary" onclick="checkLoginAndRedirect(event)">Zapisz się</a>
+                        <?php if(isset($_SESSION['user_id'])): ?>
+                            <a href="zapisz_kurs.php?typ=podstawowy" class="btn primary">Zapisz się</a>
+                        <?php else: ?>
+                            <a href="login.php" class="btn primary">Zaloguj się aby się zapisać</a>
+                        <?php endif; ?>
                     </div>
                 </div>
 
                 <div class="pricing-table" data-aos="fade-up" data-aos-delay="200">
                     <div class="pricing-header">
-                        <h3>Kurs Instruktorski</h3>
-                        <div class="pricing-price">6500 PLN</div>
+                        <h3>Kurs Rozszerzony</h3>
+                        <div class="pricing-price">3000 PLN</div>
                     </div>
                     <div class="pricing-features">
                         <ul>
-                            <li>140 godzin teorii</li>
-                            <li>60 godzin praktyki</li>
+                            <li>40 godzin teorii</li>
+                            <li>40 godzin praktyki</li>
                             <li>Materiały szkoleniowe</li>
-                            <li>Praktyki pedagogiczne</li>
                             <li>Egzamin wewnętrzny</li>
+                            <li>Dodatkowe konsultacje</li>
                         </ul>
                     </div>
                     <div class="pricing-footer">
-                        <a href="#" class="btn primary" onclick="checkLoginAndRedirect(event)">Zapisz się</a>
+                        <?php if(isset($_SESSION['user_id'])): ?>
+                            <a href="zapisz_kurs.php?typ=rozszerzony" class="btn primary">Zapisz się</a>
+                        <?php else: ?>
+                            <a href="login.php" class="btn primary">Zaloguj się aby się zapisać</a>
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -114,7 +120,11 @@
                         </ul>
                     </div>
                     <div class="pricing-footer">
-                        <a href="#" class="btn primary" onclick="checkLoginAndRedirect(event)">Zapisz się</a>
+                        <?php if(isset($_SESSION['user_id'])): ?>
+                            <a href="zapisz_kurs.php?typ=kwalifikacja" class="btn primary">Zapisz się</a>
+                        <?php else: ?>
+                            <a href="login.php" class="btn primary">Zaloguj się aby się zapisać</a>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -208,7 +218,7 @@
             <div class="cta-content" data-aos="zoom-in">
                 <h2>Rozpocznij Szkolenie Już Dziś</h2>
                 <p>Skontaktuj się z nami, aby omówić szczegóły finansowania i wybrać najlepszą opcję płatności.</p>
-                <a href="kontakt.html" class="hero-btn primary">Skontaktuj się z Nami</a>
+                <a href="kontakt.php" class="hero-btn primary">Skontaktuj się z Nami</a>
             </div>
         </section>
     </main>

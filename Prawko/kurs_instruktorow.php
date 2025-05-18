@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -16,16 +19,6 @@
                 offset: 100
             });
         });
-
-        function checkLoginAndRedirect(event) {
-            event.preventDefault();
-            // Check if user is logged in (this is a placeholder - implement actual check)
-            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-            if (!isLoggedIn) {
-                window.location.href = 'login.html';
-            }
-            // If logged in, do nothing for now
-        }
     </script>
 </head>
 <body>
@@ -35,15 +28,20 @@
                 <img src="logo.png" alt="Linia Nauka Jazdy Logo">
             </div>
             <ul>
-                <li><a href="index.html">Strona Główna</a></li>
-                <li><a href="kurs_prawa_jazdy.html">Kurs Prawa Jazdy</a></li>
-                <li><a href="kurs_instruktorow.html" class="active">Kursy dla Instruktorów</a></li>
-                <li><a href="kurs_kierowcow.html">Kursy Kierowców Zawodowych</a></li>
-                <li><a href="kurs_operatorow.html">Kursy Operatorów Maszyn</a></li>
-                <li><a href="badania.html">Badania</a></li>
-                <li><a href="oplaty.html">Opłaty</a></li>
-                <li><a href="kontakt.html">Kontakt</a></li>
-                <li><a href="login.html">Zaloguj</a></li>
+                <li><a href="index.php">Strona Główna</a></li>
+                <li><a href="kurs_prawa_jazdy.php">Kurs Prawa Jazdy</a></li>
+                <li><a href="kurs_instruktorow.php" class="active">Kursy dla Instruktorów</a></li>
+                <li><a href="kurs_kierowcow.php">Kursy Kierowców Zawodowych</a></li>
+                <li><a href="kurs_operatorow.php">Kursy Operatorów Maszyn</a></li>
+                <li><a href="badania.php">Badania</a></li>
+                <li><a href="oplaty.php">Opłaty</a></li>
+                <li><a href="kontakt.php">Kontakt</a></li>
+                <?php if(isset($_SESSION['user_id'])): ?>
+                    <li><a href="dashboard.php">Panel</a></li>
+                    <li><a href="logout.php">Wyloguj</a></li>
+                <?php else: ?>
+                    <li><a href="login.php">Zaloguj</a></li>
+                <?php endif; ?>
             </ul>
         </nav>
     </header>
@@ -242,7 +240,7 @@
             <div class="cta-content" data-aos="zoom-in">
                 <h2>Rozpocznij Karierę Instruktora</h2>
                 <p>Dołącz do grona profesjonalnych instruktorów nauki jazdy. Zapisz się na kurs już dziś!</p>
-                <a href="kontakt.html" class="hero-btn primary">Skontaktuj się z Nami</a>
+                <a href="kontakt.php" class="hero-btn primary">Skontaktuj się z Nami</a>
             </div>
         </section>
     </main>

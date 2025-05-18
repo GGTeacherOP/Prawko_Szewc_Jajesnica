@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -16,14 +19,6 @@
                 offset: 100
             });
         });
-
-        function checkLoginAndRedirect(event) {
-            event.preventDefault();
-            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-            if (!isLoggedIn) {
-                window.location.href = 'login.html';
-            }
-        }
     </script>
 </head>
 <body>
@@ -33,15 +28,20 @@
                 <img src="logo.png" alt="Linia Nauka Jazdy Logo">
             </div>
             <ul>
-                <li><a href="index.html">Strona Główna</a></li>
-                <li><a href="kurs_prawa_jazdy.html">Kurs Prawa Jazdy</a></li>
-                <li><a href="kurs_instruktorow.html">Kursy dla Instruktorów</a></li>
-                <li><a href="kurs_kierowcow.html">Kursy Kierowców Zawodowych</a></li>
-                <li><a href="kurs_operatorow.html">Kursy Operatorów Maszyn</a></li>
-                <li><a href="badania.html" class="active">Badania</a></li>
-                <li><a href="oplaty.html">Opłaty</a></li>
-                <li><a href="kontakt.html">Kontakt</a></li>
-                <li><a href="login.html">Zaloguj</a></li>
+                <li><a href="index.php">Strona Główna</a></li>
+                <li><a href="kurs_prawa_jazdy.php">Kurs Prawa Jazdy</a></li>
+                <li><a href="kurs_instruktorow.php">Kursy dla Instruktorów</a></li>
+                <li><a href="kurs_kierowcow.php">Kursy Kierowców Zawodowych</a></li>
+                <li><a href="kurs_operatorow.php">Kursy Operatorów Maszyn</a></li>
+                <li><a href="badania.php" class="active">Badania</a></li>
+                <li><a href="oplaty.php">Opłaty</a></li>
+                <li><a href="kontakt.php">Kontakt</a></li>
+                <?php if(isset($_SESSION['user_id'])): ?>
+                    <li><a href="dashboard.php">Panel</a></li>
+                    <li><a href="logout.php">Wyloguj</a></li>
+                <?php else: ?>
+                    <li><a href="login.php">Zaloguj</a></li>
+                <?php endif; ?>
             </ul>
         </nav>
     </header>
@@ -134,7 +134,11 @@
                         </ul>
                     </div>
                     <div class="pricing-footer">
-                        <a href="#" class="btn primary" onclick="checkLoginAndRedirect(event)">Umów badanie</a>
+                        <?php if(isset($_SESSION['user_id'])): ?>
+                            <a href="umow_badanie.php?typ=podstawowe" class="btn primary">Umów badanie</a>
+                        <?php else: ?>
+                            <a href="login.php" class="btn primary">Zaloguj się aby umówić</a>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <div class="pricing-table" data-aos="fade-up" data-aos-delay="200">
@@ -152,7 +156,11 @@
                         </ul>
                     </div>
                     <div class="pricing-footer">
-                        <a href="#" class="btn primary" onclick="checkLoginAndRedirect(event)">Umów badanie</a>
+                        <?php if(isset($_SESSION['user_id'])): ?>
+                            <a href="umow_badanie.php?typ=zawodowe" class="btn primary">Umów badanie</a>
+                        <?php else: ?>
+                            <a href="login.php" class="btn primary">Zaloguj się aby umówić</a>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <div class="pricing-table" data-aos="fade-up" data-aos-delay="300">
@@ -204,7 +212,7 @@
             <div class="cta-content" data-aos="zoom-in">
                 <h2>Umów się na Badania</h2>
                 <p>Nie czekaj - wykonaj niezbędne badania już dziś! Szybko, profesjonalnie i w przystępnej cenie.</p>
-                <a href="kontakt.html" class="hero-btn primary">Skontaktuj się z Nami</a>
+                <a href="kontakt.php" class="hero-btn primary">Skontaktuj się z Nami</a>
             </div>
         </section>
     </main>

@@ -7,6 +7,7 @@ USE szkolajazdydb;
 -- Users table
 CREATE TABLE IF NOT EXISTS uzytkownicy (
     id INT(11) AUTO_INCREMENT PRIMARY KEY,
+    login VARCHAR(50) UNIQUE NOT NULL,
     imie VARCHAR(50) NOT NULL,
     nazwisko VARCHAR(50) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,

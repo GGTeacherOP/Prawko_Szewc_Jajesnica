@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -16,16 +19,6 @@
                 offset: 100
             });
         });
-
-        function checkLoginAndRedirect(event) {
-            event.preventDefault();
-            // Check if user is logged in (this is a placeholder - implement actual check)
-            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-            if (!isLoggedIn) {
-                window.location.href = 'login.html';
-            }
-            // If logged in, do nothing for now
-        }
     </script>
 </head>
 <body>
@@ -35,15 +28,20 @@
                 <img src="logo.png" alt="Linia Nauka Jazdy Logo">
             </div>
             <ul>
-                <li><a href="index.html">Strona Główna</a></li>
-                <li><a href="kurs_prawa_jazdy.html" class="active">Kurs Prawa Jazdy</a></li>
-                <li><a href="kurs_instruktorow.html">Kursy dla Instruktorów</a></li>
-                <li><a href="kurs_kierowcow.html">Kursy Kierowców Zawodowych</a></li>
-                <li><a href="kurs_operatorow.html">Kursy Operatorów Maszyn</a></li>
-                <li><a href="badania.html">Badania</a></li>
-                <li><a href="oplaty.html">Opłaty</a></li>
-                <li><a href="kontakt.html">Kontakt</a></li>
-                <li><a href="login.html">Zaloguj</a></li>
+                <li><a href="index.php">Strona Główna</a></li>
+                <li><a href="kurs_prawa_jazdy.php" class="active">Kurs Prawa Jazdy</a></li>
+                <li><a href="kurs_instruktorow.php">Kursy dla Instruktorów</a></li>
+                <li><a href="kurs_kierowcow.php">Kursy Kierowców Zawodowych</a></li>
+                <li><a href="kurs_operatorow.php">Kursy Operatorów Maszyn</a></li>
+                <li><a href="badania.php">Badania</a></li>
+                <li><a href="oplaty.php">Opłaty</a></li>
+                <li><a href="kontakt.php">Kontakt</a></li>
+                <?php if(isset($_SESSION['user_id'])): ?>
+                    <li><a href="dashboard.php">Panel</a></li>
+                    <li><a href="logout.php">Wyloguj</a></li>
+                <?php else: ?>
+                    <li><a href="login.php">Zaloguj</a></li>
+                <?php endif; ?>
             </ul>
         </nav>
     </header>
@@ -230,7 +228,13 @@
                         <li>Konsultacje z instruktorem</li>
                         <li>Jazdy dodatkowe: 90 PLN/h</li>
                     </ul>
-                    <a href="#" class="btn" onclick="checkLoginAndRedirect(event)">Zapisz się</a>
+                    <div class="course-actions">
+                        <?php if(isset($_SESSION['user_id'])): ?>
+                            <a href="zapisz_kurs.php?kategoria=prawo_jazdy" class="btn primary">Zapisz się na kurs</a>
+                        <?php else: ?>
+                            <a href="login.php" class="btn primary">Zaloguj się aby się zapisać</a>
+                        <?php endif; ?>
+                    </div>
                 </div>
 
                 <div class="price-card" data-aos="fade-up" data-aos-delay="200">
@@ -244,7 +248,13 @@
                         <li>Sprzęt ochronny</li>
                         <li>Jazdy dodatkowe: 100 PLN/h</li>
                     </ul>
-                    <a href="#" class="btn" onclick="checkLoginAndRedirect(event)">Zapisz się</a>
+                    <div class="course-actions">
+                        <?php if(isset($_SESSION['user_id'])): ?>
+                            <a href="zapisz_kurs.php?kategoria=prawo_jazdy" class="btn primary">Zapisz się na kurs</a>
+                        <?php else: ?>
+                            <a href="login.php" class="btn primary">Zaloguj się aby się zapisać</a>
+                        <?php endif; ?>
+                    </div>
                 </div>
 
                 <div class="price-card" data-aos="fade-up" data-aos-delay="300">
@@ -258,7 +268,13 @@
                         <li>Kwalifikacja wstępna</li>
                         <li>Jazdy dodatkowe: 150 PLN/h</li>
                     </ul>
-                    <a href="#" class="btn" onclick="checkLoginAndRedirect(event)">Zapisz się</a>
+                    <div class="course-actions">
+                        <?php if(isset($_SESSION['user_id'])): ?>
+                            <a href="zapisz_kurs.php?kategoria=prawo_jazdy" class="btn primary">Zapisz się na kurs</a>
+                        <?php else: ?>
+                            <a href="login.php" class="btn primary">Zaloguj się aby się zapisać</a>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
         </section>

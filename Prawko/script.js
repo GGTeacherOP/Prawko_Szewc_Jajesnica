@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
         observer.observe(element);
     });
 
-    // Form validation (placeholder for login/registration forms)
+    // Form validation (placeholder for registration form)
     const validateForm = (form) => {
         const inputs = form.querySelectorAll('input');
         let isValid = true;
@@ -71,26 +71,15 @@ document.addEventListener('DOMContentLoaded', () => {
         return isValid;
     };
 
-    // Example of form submission handling
-    const loginForm = document.getElementById('login-form');
+    // Registration form handling
     const registrationForm = document.getElementById('registration-form');
-
-    if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            if (validateForm(loginForm)) {
-                // Implement login logic or AJAX submission
-                console.log('Login form submitted');
-            }
-        });
-    }
 
     if (registrationForm) {
         registrationForm.addEventListener('submit', (e) => {
             e.preventDefault();
             if (validateForm(registrationForm)) {
-                // Implement registration logic or AJAX submission
-                console.log('Registration form submitted');
+                // Submit the form
+                registrationForm.submit();
             }
         });
     }

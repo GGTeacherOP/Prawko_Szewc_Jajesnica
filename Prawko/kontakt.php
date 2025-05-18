@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -25,15 +28,15 @@
                 <img src="logo.png" alt="Linia Nauka Jazdy Logo">
             </div>
             <ul>
-                <li><a href="index.html">Strona Główna</a></li>
-                <li><a href="kurs_prawa_jazdy.html">Kurs Prawa Jazdy</a></li>
-                <li><a href="kurs_instruktorow.html">Kursy dla Instruktorów</a></li>
-                <li><a href="kurs_kierowcow.html">Kursy Kierowców Zawodowych</a></li>
-                <li><a href="kurs_operatorow.html">Kursy Operatorów Maszyn</a></li>
-                <li><a href="badania.html">Badania</a></li>
-                <li><a href="oplaty.html">Opłaty</a></li>
-                <li><a href="kontakt.html" class="active">Kontakt</a></li>
-                <li><a href="login.html">Zaloguj</a></li>
+                <li><a href="index.php">Strona Główna</a></li>
+                <li><a href="kurs_prawa_jazdy.php">Kurs Prawa Jazdy</a></li>
+                <li><a href="kurs_instruktorow.php">Kursy dla Instruktorów</a></li>
+                <li><a href="kurs_kierowcow.php">Kursy Kierowców Zawodowych</a></li>
+                <li><a href="kurs_operatorow.php">Kursy Operatorów Maszyn</a></li>
+                <li><a href="badania.php">Badania</a></li>
+                <li><a href="oplaty.php">Opłaty</a></li>
+                <li><a href="kontakt.php" class="active">Kontakt</a></li>
+                <li><a href="login.php">Zaloguj</a></li>
             </ul>
         </nav>
     </header>

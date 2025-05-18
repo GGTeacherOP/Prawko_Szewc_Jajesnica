@@ -13,14 +13,14 @@ function sanitize_input($data) {
 // Check if form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Sanitize inputs
-    $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
+    $login = sanitize_input($_POST['login']);
     $haslo = $_POST['haslo'];
 
     // Validate inputs
     $errors = [];
 
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors[] = "Nieprawidłowy format email.";
+    if (empty($login)) {
+        $errors[] = "Login jest wymagany.";
     }
 
     if (empty($haslo)) {
@@ -30,10 +30,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // If no validation errors, proceed with login
     if (empty($errors)) {
         // Prepare SQL statement to check user credentials
-        $login_query = "SELECT id, imie, nazwisko, haslo FROM uzytkownicy WHERE email = ?";
+        $login_query = "SELECT id, imie, nazwisko, haslo FROM uzytkownicy WHERE login = ?";
         
         $stmt = $conn->prepare($login_query);
-        $stmt->bind_param("s", $email);
+        $stmt->bind_param("s", $login);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -53,7 +53,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $errors[] = "Nieprawidłowe hasło.";
             }
         } else {
-            $errors[] = "Użytkownik o podanym adresie email nie istnieje.";
+            $errors[] = "Użytkownik o podanym loginie nie istnieje.";
         }
 
         $stmt->close();
@@ -62,7 +62,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // If there are errors, redirect back to login with error messages
     if (!empty($errors)) {
         $error_string = urlencode(implode("|", $errors));
-        header("Location: login.html?errors=" . $error_string);
+        header("Location: login.php?errors=" . $error_string);
         exit();
     }
 }
