@@ -22,30 +22,8 @@ session_start();
     </script>
 </head>
 <body>
-    <header class="scroll-up">
-        <nav>
-            <div class="logo">
-                <img src="logo.png" alt="Linia Nauka Jazdy Logo">
-            </div>
-            <ul>
-                <li><a href="index.php">Strona Główna</a></li>
-                <li><a href="kurs_prawa_jazdy.php">Kurs Prawa Jazdy</a></li>
-                <li><a href="kurs_instruktorow.php">Kursy dla Instruktorów</a></li>
-                <li><a href="kurs_kierowcow.php">Kursy Kierowców Zawodowych</a></li>
-                <li><a href="kurs_operatorow.php">Kursy Operatorów Maszyn</a></li>
-                <li><a href="badania.php">Badania</a></li>
-                <li><a href="oplaty.php" class="active">Opłaty</a></li>
-                <li><a href="kontakt.php">Kontakt</a></li>
-                <?php if(isset($_SESSION['user_id'])): ?>
-                    <li><a href="dashboard.php">Panel</a></li>
-                    <li><a href="logout.php">Wyloguj</a></li>
-                <?php else: ?>
-                    <li><a href="login.php">Zaloguj</a></li>
-                <?php endif; ?>
-            </ul>
-        </nav>
-    </header>
-
+    <?php include 'header.php'; ?>
+    
     <main>
         <section class="page-header" data-aos="fade-down">
             <h1>Opłaty i Formy Płatności</h1>
@@ -221,6 +199,21 @@ session_start();
                 <a href="kontakt.php" class="hero-btn primary">Skontaktuj się z Nami</a>
             </div>
         </section>
+
+        <div class="contact-section">
+            <h2>Masz pytania dotyczące opłat?</h2>
+            <p>Skontaktuj się z nami telefonicznie lub mailowo</p>
+            <div class="contact-info">
+                <div>
+                    <i class="fas fa-phone"></i>
+                    <p>+48 123 456 789</p>
+                </div>
+                <div>
+                    <i class="fas fa-envelope"></i>
+                    <p>info@linianauki.pl</p>
+                </div>
+            </div>
+        </div>
     </main>
 
     <footer>

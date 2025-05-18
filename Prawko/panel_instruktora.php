@@ -1,14 +1,26 @@
 <?php
 session_start();
-require_once 'config.php';
 
-// Sprawdź czy użytkownik jest zalogowany i czy jest instruktorem
+// Check if user is logged in and is an instructor
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['rola']) || $_SESSION['rola'] !== 'instruktor') {
     header("Location: login.php");
     exit();
 }
 
-$instruktor_id = $_SESSION['user_id'];
+require_once 'config.php';
+
+// Debug
+error_log("Instructor panel accessed by: " . print_r($_SESSION, true));
+
+// Get instructor details
+$instructor_id = $_SESSION['user_id'];
+$get_instructor_query = "SELECT * FROM instruktorzy WHERE id = ?";
+$stmt = $conn->prepare($get_instructor_query);
+$stmt->bind_param("i", $instructor_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$instructor = $result->fetch_assoc();
+$stmt->close();
 
 // Pobierz zaplanowane jazdy dla instruktora
 $stmt = $conn->prepare("
@@ -21,7 +33,7 @@ $stmt = $conn->prepare("
     WHERE j.instruktor_id = ? AND j.status = 'Zaplanowana'
     ORDER BY j.data_jazdy, j.godzina_rozpoczecia
 ");
-$stmt->bind_param("i", $instruktor_id);
+$stmt->bind_param("i", $instructor_id);
 $stmt->execute();
 $jazdy = $stmt->get_result();
 ?>
@@ -36,24 +48,29 @@ $jazdy = $stmt->get_result();
     <style>
         .instructor-container {
             max-width: 1200px;
-            margin: 50px auto;
-            padding: 2rem;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 20px auto;
+            padding: 20px;
         }
 
-        .lesson-card {
+        .welcome-section {
             background-color: #f8f9fa;
-            padding: 1rem;
-            margin-bottom: 1rem;
+            padding: 20px;
             border-radius: 5px;
+            margin-bottom: 20px;
         }
 
-        .lesson-actions {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1rem;
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .success-message {
@@ -74,23 +91,15 @@ $jazdy = $stmt->get_result();
     </style>
 </head>
 <body>
-    <header class="scroll-up">
-        <nav>
-            <div class="logo">
-                <img src="logo.png" alt="Linia Nauka Jazdy Logo">
-            </div>
-            <ul>
-                <li><a href="index.php">Strona Główna</a></li>
-                <li><a href="panel_instruktora.php">Panel Instruktora</a></li>
-                <li><a href="logout.php">Wyloguj</a></li>
-            </ul>
-        </nav>
-    </header>
+    <?php include 'header.php'; ?>
 
     <main>
         <div class="instructor-container">
-            <h1>Panel Instruktora</h1>
-            
+            <div class="welcome-section">
+                <h1>Witaj, <?php echo htmlspecialchars($_SESSION['imie'] . ' ' . $_SESSION['nazwisko']); ?>!</h1>
+                <p>Panel instruktora - zarządzaj swoimi kursami i kursantami</p>
+            </div>
+
             <?php if(isset($_SESSION['success_message'])): ?>
                 <div class="success-message">
                     <?php 
@@ -108,6 +117,14 @@ $jazdy = $stmt->get_result();
                     ?>
                 </div>
             <?php endif; ?>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Twoje uprawnienia</h3>
+                    <p><?php echo htmlspecialchars($instructor['kategorie_uprawnien']); ?></p>
+                </div>
+                <!-- Dodaj więcej kart statystyk według potrzeb -->
+            </div>
 
             <h2>Zaplanowane Jazdy</h2>
             <?php if($jazdy->num_rows > 0): ?>

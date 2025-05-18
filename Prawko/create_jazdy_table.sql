@@ -24,17 +24,19 @@ CREATE TABLE pojazdy (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Create driving lessons table
-CREATE TABLE jazdy (
+CREATE TABLE IF NOT EXISTS jazdy (
     id INT(11) AUTO_INCREMENT PRIMARY KEY,
-    uzytkownik_id INT(11) NOT NULL,
+    kursant_id INT(11) NOT NULL,
     instruktor_id INT(11) NOT NULL,
-    pojazd_id INT(11) NOT NULL,
-    data_jazdy DATE NOT NULL,
-    godzina_rozpoczecia TIME NOT NULL,
-    godzina_zakonczenia TIME NOT NULL,
-    status ENUM('Zaplanowana','Zakończona','Anulowana') DEFAULT 'Zaplanowana',
+    kurs_id INT(11) NOT NULL,
+    data_jazdy DATETIME NOT NULL,
+    status ENUM('Zaplanowana', 'Zakończona', 'Anulowana') DEFAULT 'Zaplanowana',
+    ocena INT(1) DEFAULT NULL CHECK (ocena BETWEEN 1 AND 5),
+    komentarz TEXT,
+    data_utworzenia TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (kursant_id) REFERENCES uzytkownicy(id),
     FOREIGN KEY (instruktor_id) REFERENCES instruktorzy(id),
-    FOREIGN KEY (pojazd_id) REFERENCES pojazdy(id)
+    FOREIGN KEY (kurs_id) REFERENCES kursy(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Insert sample data

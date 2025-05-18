@@ -22,29 +22,7 @@ session_start();
     </script>
 </head>
 <body>
-    <header class="scroll-up">
-        <nav>
-            <div class="logo">
-                <img src="logo.png" alt="Linia Nauka Jazdy Logo">
-            </div>
-            <ul>
-                <li><a href="index.php">Strona Główna</a></li>
-                <li><a href="kurs_prawa_jazdy.php">Kurs Prawa Jazdy</a></li>
-                <li><a href="kurs_instruktorow.php">Kursy dla Instruktorów</a></li>
-                <li><a href="kurs_kierowcow.php">Kursy Kierowców Zawodowych</a></li>
-                <li><a href="kurs_operatorow.php" class="active">Kursy Operatorów Maszyn</a></li>
-                <li><a href="badania.php">Badania</a></li>
-                <li><a href="oplaty.php">Opłaty</a></li>
-                <li><a href="kontakt.php">Kontakt</a></li>
-                <?php if(isset($_SESSION['user_id'])): ?>
-                    <li><a href="dashboard.php">Panel</a></li>
-                    <li><a href="logout.php">Wyloguj</a></li>
-                <?php else: ?>
-                    <li><a href="login.php">Zaloguj</a></li>
-                <?php endif; ?>
-            </ul>
-        </nav>
-    </header>
+    <?php include 'header.php'; ?>
 
     <main>
         <section class="page-header" data-aos="fade-down">

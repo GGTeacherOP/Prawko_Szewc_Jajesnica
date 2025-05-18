@@ -58,32 +58,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         // Start transaction
         $conn->begin_transaction();
-
-        // Create the examination record
-        $stmt = $conn->prepare("INSERT INTO badania (uzytkownik_id, data_badania, typ, status, wynik, waznosc_do) 
-                               VALUES (?, ?, ?, 'Oczekujący', 'Oczekujący', DATE_ADD(?, INTERVAL 2 YEAR))");
-        $examination_date = $selected_date . ' ' . $selected_time;
-        $stmt->bind_param("isss", $user_id, $examination_date, $typ_badania, $selected_date);
-        $stmt->execute();
         
-        // Create payment record for examination
-        $stmt = $conn->prepare("INSERT INTO platnosci (uzytkownik_id, kwota, status, opis) VALUES (?, ?, 'Oczekujący', ?)");
-        $opis = "Badanie lekarskie - " . $typ_badania;
-        $stmt->bind_param("ids", $user_id, $kwota, $opis);
-        $stmt->execute();
-
+        // Add examination record
+        $stmt = $conn->prepare("INSERT INTO badania (uzytkownik_id, typ, data_badania, status, kwota) VALUES (?, ?, ?, 'Zaplanowane', ?)");
+        $data_badania = $selected_date . ' ' . $selected_time;
+        $stmt->bind_param("issd", $user_id, $typ_badania, $data_badania, $kwota);
+        
+        if (!$stmt->execute()) {
+            throw new Exception("Błąd podczas zapisywania badania: " . $stmt->error);
+        }
+        $badanie_id = $stmt->insert_id;
+        
+        // Add payment record
+        $stmt = $conn->prepare("INSERT INTO platnosci (uzytkownik_id, badanie_id, kwota, status, opis) VALUES (?, ?, ?, 'Oczekujący', ?)");
+        $opis = "Opłata za badanie " . strtolower($typ_badania);
+        $stmt->bind_param("iids", $user_id, $badanie_id, $kwota, $opis);
+        
+        if (!$stmt->execute()) {
+            throw new Exception("Błąd podczas tworzenia płatności: " . $stmt->error);
+        }
+        
         // Commit transaction
         $conn->commit();
         
-        $_SESSION['success_message'] = "Badanie zostało umówione. Przejdź do sekcji płatności, aby uregulować należność.";
-        header("Location: oplaty.php");
+        $_SESSION['success_message'] = "Badanie zostało zaplanowane. Przejdź do sekcji 'Opłaty' aby uregulować należność.";
+        header("Location: dashboard.php");
         exit();
+        
     } catch (Exception $e) {
-        // Rollback transaction on error
         $conn->rollback();
-        $_SESSION['error_message'] = "Wystąpił błąd podczas umawiania badania: " . $e->getMessage();
-        header("Location: badania.php");
-        exit();
+        $_SESSION['error_message'] = $e->getMessage();
     }
 }
 ?>
@@ -94,106 +98,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Umów Badanie - Linia Nauka Jazdy</title>
     <link rel="stylesheet" href="styles.css">
-    <style>
-        .calendar {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 2rem;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .dates-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 10px;
-            margin: 2rem 0;
-        }
-
-        .date-cell {
-            padding: 1rem;
-            text-align: center;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .date-cell:hover {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        .date-cell.selected {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        .date-cell.disabled {
-            background-color: #f5f5f5;
-            color: #999;
-            cursor: not-allowed;
-        }
-
-        .time-slots {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin: 2rem 0;
-        }
-
-        .time-slot {
-            padding: 1rem;
-            text-align: center;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .time-slot:hover {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        .time-slot.selected {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        .examination-info {
-            margin-bottom: 2rem;
-            padding: 1rem;
-            background-color: #f8f9fa;
-            border-radius: 5px;
-        }
-    </style>
 </head>
 <body>
-    <header class="scroll-up">
-        <nav>
-            <div class="logo">
-                <img src="logo.png" alt="Linia Nauka Jazdy Logo">
-            </div>
-            <ul>
-                <li><a href="index.php">Strona Główna</a></li>
-                <li><a href="kurs_prawa_jazdy.php">Kurs Prawa Jazdy</a></li>
-                <li><a href="kurs_instruktorow.php">Kursy dla Instruktorów</a></li>
-                <li><a href="kurs_kierowcow.php">Kursy Kierowców Zawodowych</a></li>
-                <li><a href="kurs_operatorow.php">Kursy Operatorów Maszyn</a></li>
-                <li><a href="badania.php" class="active">Badania</a></li>
-                <li><a href="oplaty.php">Opłaty</a></li>
-                <li><a href="kontakt.php">Kontakt</a></li>
-                <?php if(isset($_SESSION['user_id'])): ?>
-                    <li><a href="dashboard.php">Panel</a></li>
-                    <li><a href="logout.php">Wyloguj</a></li>
-                <?php else: ?>
-                    <li><a href="login.php">Zaloguj</a></li>
-                <?php endif; ?>
-            </ul>
-        </nav>
-    </header>
+    <?php include 'header.php'; ?>
 
     <main>
         <div class="calendar">
@@ -206,75 +113,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <p>Wybierz dogodny termin badania:</p>
-
-            <form method="POST" id="examination-form">
-                <div class="dates-grid">
-                    <?php
-                    foreach ($available_dates as $date) {
-                        $date_obj = new DateTime($date);
-                        $formatted_date = $date_obj->format('d.m.Y');
-                        echo "<div class='date-cell' data-date='$date'>$formatted_date</div>";
-                    }
-                    ?>
+            
+            <form method="POST" action="">
+                <div class="form-group">
+                    <label for="date">Data:</label>
+                    <select name="selected_date" id="date" required>
+                        <?php foreach ($available_dates as $date): ?>
+                            <option value="<?php echo $date; ?>">
+                                <?php echo date('d.m.Y', strtotime($date)); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
 
-                <h3>Dostępne godziny:</h3>
-                <div class="time-slots">
-                    <?php
-                    $time_slots = array('09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00');
-                    foreach ($time_slots as $time) {
-                        echo "<div class='time-slot' data-time='$time'>$time</div>";
-                    }
-                    ?>
+                <div class="form-group">
+                    <label for="time">Godzina:</label>
+                    <select name="selected_time" id="time" required>
+                        <?php
+                        for ($hour = 8; $hour <= 16; $hour++) {
+                            for ($minute = 0; $minute < 60; $minute += 30) {
+                                $time = sprintf("%02d:%02d:00", $hour, $minute);
+                                echo "<option value=\"$time\">$time</option>";
+                            }
+                        }
+                        ?>
+                    </select>
                 </div>
 
-                <input type="hidden" name="selected_date" id="selected_date">
-                <input type="hidden" name="selected_time" id="selected_time">
-                <button type="submit" class="btn primary" disabled id="submit-btn">Umów badanie</button>
+                <button type="submit" class="btn">Zarezerwuj termin</button>
             </form>
         </div>
     </main>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const dateCells = document.querySelectorAll('.date-cell');
-            const timeSlots = document.querySelectorAll('.time-slot');
-            const form = document.getElementById('examination-form');
-            const submitBtn = document.getElementById('submit-btn');
-            const selectedDateInput = document.getElementById('selected_date');
-            const selectedTimeInput = document.getElementById('selected_time');
-
-            let selectedDate = null;
-            let selectedTime = null;
-
-            dateCells.forEach(cell => {
-                cell.addEventListener('click', function() {
-                    dateCells.forEach(c => c.classList.remove('selected'));
-                    this.classList.add('selected');
-                    selectedDate = this.dataset.date;
-                    selectedDateInput.value = selectedDate;
-                    checkFormValidity();
-                });
-            });
-
-            timeSlots.forEach(slot => {
-                slot.addEventListener('click', function() {
-                    timeSlots.forEach(s => s.classList.remove('selected'));
-                    this.classList.add('selected');
-                    selectedTime = this.dataset.time;
-                    selectedTimeInput.value = selectedTime;
-                    checkFormValidity();
-                });
-            });
-
-            function checkFormValidity() {
-                if (selectedDate && selectedTime) {
-                    submitBtn.disabled = false;
-                } else {
-                    submitBtn.disabled = true;
-                }
-            }
-        });
-    </script>
 </body>
 </html> 

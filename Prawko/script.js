@@ -1,10 +1,12 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Initialize AOS
-    AOS.init({
-        duration: 1000,
-        once: true,
-        offset: 100
-    });
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if AOS is available before initializing
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100
+        });
+    }
 
     // Mobile navigation toggle
     const navToggle = document.createElement('div');
@@ -176,11 +178,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Initialize animations when DOM is loaded
-    document.addEventListener('DOMContentLoaded', function() {
-        initializeAnimations();
-        animateNumbers();
-        animateOnScroll();
-    });
+    initializeAnimations();
+    animateNumbers();
+    animateOnScroll();
 
     // Add scroll event listener for animations
     window.addEventListener('scroll', animateOnScroll);

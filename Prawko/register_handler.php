@@ -2,122 +2,127 @@
 session_start();
 require_once 'config.php';
 
-// Function to sanitize input
-function sanitize_input($data) {
-    $data = trim($data);
-    $data = stripslashes($data);
-    $data = htmlspecialchars($data);
-    return $data;
+$error_messages = array();
+
+// Get raw input
+$imie = trim($_POST['imie'] ?? '');
+$nazwisko = trim($_POST['nazwisko'] ?? '');
+$email = trim($_POST['email'] ?? '');
+$telefon = trim($_POST['telefon'] ?? '');
+$login = trim($_POST['login'] ?? '');
+$haslo = $_POST['haslo'] ?? '';
+$powtorz_haslo = $_POST['powtorz_haslo'] ?? '';
+$data_urodzenia = trim($_POST['data_urodzenia'] ?? '');
+$kategoria_prawa_jazdy = trim($_POST['kategoria_prawa_jazdy'] ?? '');
+
+// Debug information
+error_log("Registration attempt for user: " . $login);
+error_log("Email: " . $email);
+
+// Validate required fields
+if (empty($imie) || empty($nazwisko) || empty($email) || empty($telefon) || empty($login) || empty($haslo) || empty($powtorz_haslo) || empty($data_urodzenia) || empty($kategoria_prawa_jazdy)) {
+    $error_messages[] = "Wszystkie pola są wymagane.";
 }
 
-// Check if form is submitted
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $form_data = $_POST;
+// Validate email format
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $error_messages[] = "Nieprawidłowy format adresu email.";
+}
+
+// Validate phone number format
+if (!preg_match("/^[0-9]{9}$/", $telefon)) {
+    $error_messages[] = "Numer telefonu musi składać się z 9 cyfr.";
+}
+
+// Validate password match
+if ($haslo !== $powtorz_haslo) {
+    $error_messages[] = "Hasła nie są identyczne.";
+}
+
+// Validate password strength
+if (strlen($haslo) < 8) {
+    $error_messages[] = "Hasło musi mieć co najmniej 8 znaków.";
+}
+
+// Validate date of birth
+$date_now = new DateTime();
+$date_birth = new DateTime($data_urodzenia);
+$age = $date_now->diff($date_birth)->y;
+
+if ($age < 16) {
+    $error_messages[] = "Musisz mieć co najmniej 16 lat, aby się zarejestrować.";
+}
+
+// Check if email already exists
+$stmt = $conn->prepare("SELECT 1 FROM uzytkownicy WHERE email = ?");
+$stmt->bind_param("s", $email);
+$stmt->execute();
+if ($stmt->get_result()->num_rows > 0) {
+    $error_messages[] = "Ten adres email jest już zarejestrowany.";
+}
+
+// Check if login already exists
+$stmt = $conn->prepare("SELECT 1 FROM uzytkownicy WHERE login = ?");
+$stmt->bind_param("s", $login);
+$stmt->execute();
+if ($stmt->get_result()->num_rows > 0) {
+    $error_messages[] = "Ten login jest już zajęty.";
+}
+
+// If there are any errors, redirect back to registration form
+if (!empty($error_messages)) {
+    $_SESSION['error_messages'] = $error_messages;
+    header("Location: rejestracja.php");
+    exit();
+}
+
+try {
+    // Start transaction
+    $conn->begin_transaction();
+
+    // Hash password with strong options
+    $hashed_password = password_hash($haslo, PASSWORD_DEFAULT, ['cost' => 12]);
     
-    try {
-        // Sprawdź czy hasła się zgadzają
-        if ($_POST['haslo'] !== $_POST['powtorz_haslo']) {
-            throw new Exception("Hasła nie są takie same");
-        }
+    // Debug information
+    error_log("Password hash generated for user: " . $login);
+    error_log("Hash length: " . strlen($hashed_password));
 
-        // Sprawdź czy email już istnieje
-        $stmt = $conn->prepare("SELECT id FROM uzytkownicy WHERE email = ?");
-        $stmt->bind_param("s", $_POST['email']);
-        $stmt->execute();
-        if ($stmt->get_result()->num_rows > 0) {
-            throw new Exception("Ten email jest już zajęty");
-        }
+    // Insert user data
+    $stmt = $conn->prepare("
+        INSERT INTO uzytkownicy (
+            imie, nazwisko, email, telefon, login, haslo, 
+            data_urodzenia, kategoria_prawa_jazdy, rola, data_rejestracji
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'kursant', NOW())
+    ");
 
-        // Sprawdź czy login już istnieje
-        $stmt = $conn->prepare("SELECT id FROM uzytkownicy WHERE login = ?");
-        $stmt->bind_param("s", $_POST['login']);
-        $stmt->execute();
-        if ($stmt->get_result()->num_rows > 0) {
-            throw new Exception("Ten login jest już zajęty");
-        }
+    $stmt->bind_param(
+        "ssssssss",
+        $imie, $nazwisko, $email, $telefon, $login, $hashed_password,
+        $data_urodzenia, $kategoria_prawa_jazdy
+    );
 
-        // Validate required fields
-        $required_fields = ['imie', 'nazwisko', 'email', 'telefon', 'login', 'haslo', 'data_urodzenia', 'kategoria_prawa_jazdy'];
-        foreach ($required_fields as $field) {
-            if (empty($_POST[$field])) {
-                throw new Exception("Pole " . $field . " jest wymagane");
-            }
-        }
-
-        // Check if instructor registration
-        $is_instructor = isset($_POST['is_instructor']) && $_POST['is_instructor'] == '1';
-        if ($is_instructor) {
-            if (!isset($_POST['instructor_password']) || $_POST['instructor_password'] !== '123') {
-                throw new Exception("Nieprawidłowe hasło weryfikacyjne instruktora");
-            }
-            if (!isset($_POST['instructor_categories']) || empty($_POST['instructor_categories'])) {
-                throw new Exception("Wybierz co najmniej jedną kategorię uprawnień instruktora");
-            }
-        }
-
-        // Start transaction
-        $conn->begin_transaction();
-
-        // Insert user
-        $stmt = $conn->prepare("
-            INSERT INTO uzytkownicy (imie, nazwisko, email, telefon, login, haslo, data_urodzenia, kategoria_prawa_jazdy, rola)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ");
-
-        $hashed_password = password_hash($_POST['haslo'], PASSWORD_DEFAULT);
-        $rola = $is_instructor ? 'instruktor' : 'kursant';
-        
-        $stmt->bind_param("sssssssss", 
-            $_POST['imie'],
-            $_POST['nazwisko'],
-            $_POST['email'],
-            $_POST['telefon'],
-            $_POST['login'],
-            $hashed_password,
-            $_POST['data_urodzenia'],
-            $_POST['kategoria_prawa_jazdy'],
-            $rola
-        );
-        
-        if (!$stmt->execute()) {
-            throw new Exception("Błąd podczas dodawania użytkownika: " . $stmt->error);
-        }
-
-        $user_id = $conn->insert_id;
-
-        // If instructor, add to instructors table
-        if ($is_instructor) {
-            // For SET type, we need to join with commas
-            $kategorie = implode(',', array_unique($_POST['instructor_categories']));
-            $stmt = $conn->prepare("
-                INSERT INTO instruktorzy (imie, nazwisko, email, telefon, kategorie_uprawnien)
-                VALUES (?, ?, ?, ?, ?)
-            ");
-            $stmt->bind_param("sssss",
-                $_POST['imie'],
-                $_POST['nazwisko'],
-                $_POST['email'],
-                $_POST['telefon'],
-                $kategorie
-            );
-            if (!$stmt->execute()) {
-                throw new Exception("Błąd podczas dodawania instruktora: " . $stmt->error . " SQL: " . $stmt->sqlstate);
-            }
-        }
-
-        $conn->commit();
-        $_SESSION['success_message'] = "Konto zostało utworzone pomyślnie. Możesz się teraz zalogować.";
-        header("Location: login.php");
-        exit();
-
-    } catch (Exception $e) {
-        $conn->rollback();
-        $_SESSION['error_messages'] = array($e->getMessage());
-        $_SESSION['form_data'] = $form_data;
-        header("Location: register.php");
-        exit();
+    if (!$stmt->execute()) {
+        throw new Exception("Błąd podczas rejestracji użytkownika: " . $stmt->error);
     }
-}
 
-$conn->close();
+    // Debug information
+    error_log("User registered successfully: " . $login);
+    error_log("User ID: " . $conn->insert_id);
+
+    // Commit transaction
+    $conn->commit();
+
+    // Set success message and redirect to login page
+    $_SESSION['success_message'] = "Rejestracja zakończona pomyślnie. Możesz się teraz zalogować.";
+    header("Location: login.php?registration=success");
+    exit();
+
+} catch (Exception $e) {
+    // Rollback transaction on error
+    $conn->rollback();
+    error_log("Registration error for user " . $login . ": " . $e->getMessage());
+    $_SESSION['error_messages'] = array("Wystąpił błąd podczas rejestracji: " . $e->getMessage());
+    header("Location: rejestracja.php");
+    exit();
+}
 ?>

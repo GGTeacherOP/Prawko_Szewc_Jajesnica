@@ -1,4 +1,5 @@
 <?php
+session_start();
 if (!isset($conn)) {
     require_once 'config.php';
 }
@@ -18,34 +19,62 @@ if(isset($_SESSION['user_id'])) {
     $has_active_course = $stmt->get_result()->num_rows > 0;
 }
 ?>
-<header class="scroll-up">
-    <nav>
-        <div class="logo">
-            <img src="logo.png" alt="Linia Nauka Jazdy Logo">
-        </div>
-        <ul>
-            <li><a href="index.php" <?php echo basename($_SERVER['PHP_SELF']) == 'index.php' ? 'class="active"' : ''; ?>>Strona Główna</a></li>
-            <li><a href="kurs_prawa_jazdy.php" <?php echo basename($_SERVER['PHP_SELF']) == 'kurs_prawa_jazdy.php' ? 'class="active"' : ''; ?>>Kurs Prawa Jazdy</a></li>
-            <li><a href="kurs_instruktorow.php" <?php echo basename($_SERVER['PHP_SELF']) == 'kurs_instruktorow.php' ? 'class="active"' : ''; ?>>Kursy dla Instruktorów</a></li>
-            <li><a href="kurs_kierowcow.php" <?php echo basename($_SERVER['PHP_SELF']) == 'kurs_kierowcow.php' ? 'class="active"' : ''; ?>>Kursy Kierowców Zawodowych</a></li>
-            <li><a href="kurs_operatorow.php" <?php echo basename($_SERVER['PHP_SELF']) == 'kurs_operatorow.php' ? 'class="active"' : ''; ?>>Kursy Operatorów Maszyn</a></li>
-            <li><a href="badania.php" <?php echo basename($_SERVER['PHP_SELF']) == 'badania.php' ? 'class="active"' : ''; ?>>Badania</a></li>
-            <?php if($has_active_course): ?>
-                <li><a href="planowanie_jazd.php" <?php echo basename($_SERVER['PHP_SELF']) == 'planowanie_jazd.php' ? 'class="active"' : ''; ?>>Planowanie Jazd</a></li>
-            <?php endif; ?>
-            <li><a href="oplaty.php" <?php echo basename($_SERVER['PHP_SELF']) == 'oplaty.php' ? 'class="active"' : ''; ?>>Opłaty</a></li>
-            <li><a href="kontakt.php" <?php echo basename($_SERVER['PHP_SELF']) == 'kontakt.php' ? 'class="active"' : ''; ?>>Kontakt</a></li>
-            <?php if(isset($_SESSION['user_id'])): ?>
-                <?php if(isset($_SESSION['rola']) && $_SESSION['rola'] === 'instruktor'): ?>
-                    <li><a href="panel_instruktora.php">Panel Instruktora</a></li>
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linia Nauka Jazdy</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- AOS Library -->
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="scroll-up">
+        <nav>
+            <div class="logo">
+                <img src="logo.png" alt="Linia Nauka Jazdy Logo">
+            </div>
+            <ul>
+                <li><a href="index.php">Strona Główna</a></li>
+                
+                <?php if(isset($_SESSION['user_id'])): ?>
+                    <?php if(isset($_SESSION['rola']) && $_SESSION['rola'] === 'instruktor'): ?>
+                        <li><a href="panel_instruktora.php">Panel Instruktora</a></li>
+                        <li><a href="harmonogram_jazd.php">Harmonogram Jazd</a></li>
+                        <li><a href="moi_kursanci.php">Moi Kursanci</a></li>
+                        <li><a href="ustaw_dostepnosc.php">Ustaw Dostępność</a></li>
+                    <?php else: ?>
+                        <li><a href="dashboard.php">Panel Kursanta</a></li>
+                        <li><a href="planowanie_jazd.php">Zaplanuj Jazdy</a></li>
+                        <li><a href="moje_jazdy.php">Moje Jazdy</a></li>
+                        <li><a href="badania.php">Badania</a></li>
+                        <li><a href="oplaty.php">Opłaty</a></li>
+                    <?php endif; ?>
+                    <li><a href="logout.php" class="btn-logout">Wyloguj się</a></li>
                 <?php else: ?>
-                    <li><a href="dashboard.php">Panel Kursanta</a></li>
+                    <li><a href="kurs_prawa_jazdy.php">Kurs Prawa Jazdy</a></li>
+                    <li><a href="kurs_instruktorow.php">Kursy dla Instruktorów</a></li>
+                    <li><a href="kurs_kierowcow.php">Kursy Kierowców Zawodowych</a></li>
+                    <li><a href="kurs_operatorow.php">Kursy Operatorów Maszyn</a></li>
+                    <li><a href="badania.php">Badania</a></li>
+                    <li><a href="oplaty.php">Opłaty</a></li>
+                    <li><a href="login.php">Zaloguj się</a></li>
+                    <li><a href="rejestracja.php">Zarejestruj się</a></li>
                 <?php endif; ?>
-                <li><a href="logout.php">Wyloguj</a></li>
-            <?php else: ?>
-                <li><a href="login.php" <?php echo basename($_SERVER['PHP_SELF']) == 'login.php' ? 'class="active"' : ''; ?>>Zaloguj</a></li>
-                <li><a href="register.php">Zarejestruj</a></li>
-            <?php endif; ?>
-        </ul>
-    </nav>
-</header> 
+            </ul>
+            <div class="nav-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </nav>
+    </header>
+
+    <!-- AOS Library -->
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <!-- Custom scripts -->
+    <script src="js/script.js"></script>
+</body>
+</html> 
