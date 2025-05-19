@@ -22,16 +22,20 @@ $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 $stmt->close();
 
-// Get user's courses with more details
-$courses_query = "SELECT k.*, z.status, z.id as zapis_id,
-                  (SELECT COUNT(*) FROM platnosci p 
-                   WHERE p.kurs_id = k.id 
-                   AND p.uzytkownik_id = z.uzytkownik_id 
-                   AND p.status = 'Opłacony') as is_paid
-                  FROM kursy k 
-                  JOIN zapisy z ON k.id = z.kurs_id 
-                  WHERE z.uzytkownik_id = ?
-                  ORDER BY z.id DESC";
+// Get user's courses with payment status
+$courses_query = "SELECT 
+    k.*,
+    z.status as zapis_status,
+    z.id as zapis_id,
+    p.id as payment_id,
+    p.status as payment_status,
+    p.kwota as payment_amount,
+    p.data_platnosci as payment_date
+FROM kursy k 
+JOIN zapisy z ON k.id = z.kurs_id 
+LEFT JOIN platnosci p ON k.id = p.kurs_id AND p.uzytkownik_id = z.uzytkownik_id
+WHERE z.uzytkownik_id = ?
+ORDER BY z.id DESC";
 $stmt = $conn->prepare($courses_query);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -39,12 +43,12 @@ $courses_result = $stmt->get_result();
 $stmt->close();
 
 // Get user's medical examinations
-$examinations_query = "SELECT id FROM badania WHERE uzytkownik_id = ? LIMIT 1";
+$examinations_query = "SELECT * FROM badania WHERE uzytkownik_id = ? ORDER BY data_badania DESC LIMIT 1";
 $stmt = $conn->prepare($examinations_query);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $examination_result = $stmt->get_result();
-$has_any_examination = $examination_result->num_rows > 0;
+$latest_examination = $examination_result->fetch_assoc();
 $stmt->close();
 
 // Get user's payments with course details
@@ -63,7 +67,7 @@ $stmt->close();
 $needs_medical = false;
 $has_valid_medical = false;
 
-if ($has_any_examination) {
+if ($latest_examination) {
     $has_valid_medical = true;
 }
 
@@ -77,7 +81,7 @@ if ($has_any_examination) {
     <link rel="stylesheet" href="css/style.css">
     <style>
         .dashboard-container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 120px auto 50px;
             padding: 2rem;
             background-color: var(--white);
@@ -266,21 +270,29 @@ if ($has_any_examination) {
                         <div>
                             <h3><?php echo htmlspecialchars($course['nazwa']); ?></h3>
                             <p>Kategoria: <?php echo htmlspecialchars($course['kategoria']); ?></p>
-                            <p>Status: <span class="status <?php echo strtolower($course['status']); ?>">
-                                <?php echo htmlspecialchars($course['status']); ?>
+                            <p>Status: <span class="status <?php echo strtolower($course['payment_status']); ?>">
+                                <?php 
+                                if ($course['payment_status'] === 'Opłacony') {
+                                    echo 'Opłacony';
+                                } elseif ($course['payment_status'] === 'Anulowany') {
+                                    echo 'Anulowany';
+                                } else {
+                                    echo 'Oczekujący na płatność';
+                                }
+                                ?>
                             </span></p>
-                            <div class="course-requirements <?php echo ($course['is_paid']) ? 'success' : 'warning'; ?>">
-                                <?php if (!$course['is_paid']): ?>
+                            <div class="course-requirements <?php echo ($course['payment_status'] === 'Opłacony') ? 'success' : 'warning'; ?>">
+                                <?php if ($course['payment_status'] !== 'Opłacony'): ?>
                                     <p>❗ Wymagana płatność za kurs</p>
                                 <?php endif; ?>
                             </div>
                         </div>
                         <div class="action-buttons">
-                            <?php if (!$course['is_paid']): ?>
+                            <?php if ($course['payment_status'] !== 'Opłacony'): ?>
                                 <a href="platnosci.php?kurs_id=<?php echo $course['id']; ?>" class="btn btn-primary small">Opłać kurs</a>
                             <?php endif; ?>
-                            <?php if ($course['status'] === 'Zatwierdzony' && $course['is_paid']): ?>
-                                <a href="planowanie_jazd.php?kurs_id=<?php echo $course['id']; ?>" class="btn btn-primary small">Zaplanuj jazdę</a>
+                            <?php if ($course['payment_status'] === 'Opłacony'): ?>
+                                <a href="moje_jazdy.php" class="btn btn-primary small">Moje jazdy</a>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -295,7 +307,7 @@ if ($has_any_examination) {
 
         <div class="examinations-section">
             <h2 class="section-title">Badania lekarskie</h2>
-            <?php if ($has_any_examination): ?>
+            <?php if (!$latest_examination): ?>
                 <div class="examination-card">
                     <div>
                         <p>Badanie dostępne</p>

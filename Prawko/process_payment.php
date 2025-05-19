@@ -29,17 +29,41 @@ try {
         }
         $stmt->close();
     } elseif (isset($_GET['payment_id'])) {
-        // Get single payment
+        // Get single payment with detailed status check
         $payment_id = $_GET['payment_id'];
+        
+        // First check if there's any payment in progress
+        $stmt = $conn->prepare("SELECT COUNT(*) as in_progress 
+                               FROM platnosci 
+                               WHERE uzytkownik_id = ? 
+                               AND status = 'Oczekujący' 
+                               AND id != ?");
+        $stmt->bind_param("ii", $user_id, $payment_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $in_progress = $result->fetch_assoc()['in_progress'];
+        $stmt->close();
+
+        if ($in_progress > 0) {
+            throw new Exception("Masz już inną płatność w trakcie realizacji. Zakończ ją lub anuluj przed rozpoczęciem nowej.");
+        }
+
+        // Now get the specific payment
         $stmt = $conn->prepare("SELECT p.*, k.nazwa as kurs_nazwa 
                                FROM platnosci p 
                                LEFT JOIN kursy k ON p.kurs_id = k.id 
-                               WHERE p.id = ? AND p.uzytkownik_id = ? AND p.status = 'Oczekujący'");
+                               WHERE p.id = ? AND p.uzytkownik_id = ?");
         $stmt->bind_param("ii", $payment_id, $user_id);
         $stmt->execute();
         $result = $stmt->get_result();
         
         if ($payment = $result->fetch_assoc()) {
+            // Check if payment is already in progress or completed
+            if ($payment['status'] === 'Opłacony') {
+                throw new Exception("Ta płatność została już zrealizowana.");
+            } elseif ($payment['status'] === 'Anulowany') {
+                throw new Exception("Ta płatność została anulowana.");
+            }
             $payments[] = $payment;
             $total_amount = $payment['kwota'];
         }
@@ -63,6 +87,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $conn->begin_transaction();
         
         foreach ($payments as $payment) {
+            // Double check payment status before processing
+            $stmt = $conn->prepare("SELECT status FROM platnosci WHERE id = ? AND uzytkownik_id = ? FOR UPDATE");
+            $stmt->bind_param("ii", $payment['id'], $user_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $current_status = $result->fetch_assoc();
+            $stmt->close();
+
+            if ($current_status['status'] !== 'Oczekujący') {
+                throw new Exception("Status płatności został zmieniony. Odśwież stronę i spróbuj ponownie.");
+            }
+
             // Update payment status
             $stmt = $conn->prepare("UPDATE platnosci SET status = 'Opłacony', data_platnosci = NOW() WHERE id = ? AND uzytkownik_id = ?");
             $stmt->bind_param("ii", $payment['id'], $user_id);

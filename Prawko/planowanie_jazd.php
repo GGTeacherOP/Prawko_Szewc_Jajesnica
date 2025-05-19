@@ -10,27 +10,35 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-// Get user's course category
+// Get user's course category and ID
 $stmt = $conn->prepare("
-    SELECT k.kategoria, k.nazwa, z.status, COUNT(j.id) as liczba_jazd
+    SELECT k.id as kurs_id, k.kategoria, k.nazwa, z.status, 
+           COUNT(j.id) as liczba_jazd
     FROM zapisy z 
     JOIN kursy k ON z.kurs_id = k.id 
-    LEFT JOIN jazdy j ON z.uzytkownik_id = j.kursant_id AND j.status != 'Anulowana'
+    LEFT JOIN jazdy j ON j.kursant_id = ? AND j.status != 'Anulowana'
     WHERE z.uzytkownik_id = ? AND z.status = 'Zatwierdzony'
-    GROUP BY k.id
+    GROUP BY k.id, k.kategoria, k.nazwa, z.status
 ");
 
 if ($stmt === false) {
     die("Błąd przygotowania zapytania: " . $conn->error);
 }
 
-$stmt->bind_param("i", $user_id);
+$stmt->bind_param("ii", $user_id, $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 $kurs = $result->fetch_assoc();
 
 if (!$kurs) {
     $_SESSION['error_message'] = "Nie masz opłaconego kursu. Aby zaplanować jazdę, musisz najpierw opłacić kurs.";
+    header("Location: dashboard.php");
+    exit();
+}
+
+$kurs_id = $kurs['kurs_id'];
+if (!$kurs_id) {
+    $_SESSION['error_message'] = "Nie znaleziono kursu. Proszę skontaktować się z administracją.";
     header("Location: dashboard.php");
     exit();
 }
@@ -71,12 +79,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $conn->prepare("
             SELECT COUNT(*) as konflikt
             FROM jazdy 
-            WHERE instruktor_id = ? AND data_jazdy = ? 
-            AND ((godzina_rozpoczecia <= ? AND ADDTIME(godzina_rozpoczecia, SEC_TO_TIME(liczba_godzin * 3600)) > ?)
-            OR (godzina_rozpoczecia < ADDTIME(?, SEC_TO_TIME(? * 3600)) AND godzina_rozpoczecia >= ?))
+            WHERE instruktor_id = ? 
+            AND DATE(data_jazdy) = ? 
+            AND TIME(data_jazdy) BETWEEN ? AND ADDTIME(?, SEC_TO_TIME(? * 3600))
             AND status = 'Zaplanowana'
         ");
-        $stmt->bind_param("issssss", $instruktor_id, $data, $godzina, $godzina, $godzina, $liczba_godzin, $godzina);
+        $stmt->bind_param("issss", $instruktor_id, $data, $godzina, $godzina, $liczba_godzin);
         $stmt->execute();
         $result = $stmt->get_result();
         $konflikt = $result->fetch_assoc()['konflikt'];
@@ -86,11 +94,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Insert new driving lesson
+        $data_jazdy = $data . ' ' . $godzina . ':00';
         $stmt = $conn->prepare("
-            INSERT INTO jazdy (uzytkownik_id, instruktor_id, pojazd_id, data_jazdy, godzina_rozpoczecia, liczba_godzin)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO jazdy (kursant_id, instruktor_id, kurs_id, data_jazdy)
+            VALUES (?, ?, ?, ?)
         ");
-        $stmt->bind_param("iiissi", $user_id, $instruktor_id, $pojazd_id, $data, $godzina, $liczba_godzin);
+        $stmt->bind_param("iiis", $user_id, $instruktor_id, $kurs_id, $data_jazdy);
         $stmt->execute();
 
         $_SESSION['success_message'] = "Jazda została zaplanowana pomyślnie.";
@@ -126,17 +135,52 @@ $pojazdy = $stmt->get_result();
 
 // Get user's scheduled lessons
 $stmt = $conn->prepare("
-    SELECT j.*, i.imie as instruktor_imie, i.nazwisko as instruktor_nazwisko,
-           p.marka, p.model
+    SELECT j.*, i.imie as instruktor_imie, i.nazwisko as instruktor_nazwisko
     FROM jazdy j
     JOIN instruktorzy i ON j.instruktor_id = i.id
-    JOIN pojazdy p ON j.pojazd_id = p.id
-    WHERE j.uzytkownik_id = ? AND j.status = 'Zaplanowana'
-    ORDER BY j.data_jazdy, j.godzina_rozpoczecia
+    WHERE j.kursant_id = ? AND j.status = 'Zaplanowana'
+    ORDER BY j.data_jazdy
 ");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $zaplanowane_jazdy = $stmt->get_result();
+
+// Handle lesson cancellation
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['anuluj_jazde'])) {
+    $jazda_id = $_POST['jazda_id'];
+    
+    // Verify that the lesson belongs to the current user and get instructor_id
+    $stmt = $conn->prepare("
+        SELECT id, instruktor_id, kurs_id 
+        FROM jazdy 
+        WHERE id = ? AND kursant_id = ? AND status = 'Zaplanowana'
+    ");
+    $stmt->bind_param("ii", $jazda_id, $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $jazda = $result->fetch_assoc();
+    
+    if ($jazda && $jazda['instruktor_id'] && $jazda['kurs_id']) {
+        // Update lesson status to 'Anulowana' while preserving all required fields
+        $stmt = $conn->prepare("
+            UPDATE jazdy 
+            SET status = 'Anulowana' 
+            WHERE id = ? AND instruktor_id = ? AND kurs_id = ?
+        ");
+        $stmt->bind_param("iii", $jazda_id, $jazda['instruktor_id'], $jazda['kurs_id']);
+        
+        if ($stmt->execute()) {
+            $_SESSION['success_message'] = "Jazda została anulowana pomyślnie.";
+        } else {
+            $_SESSION['error_message'] = "Wystąpił błąd podczas anulowania jazdy.";
+        }
+    } else {
+        $_SESSION['error_message'] = "Nie można anulować tej jazdy.";
+    }
+    
+    header("Location: planowanie_jazd.php");
+    exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="pl">
@@ -326,16 +370,13 @@ $zaplanowane_jazdy = $stmt->get_result();
                     <?php while($jazda = $zaplanowane_jazdy->fetch_assoc()): ?>
                         <div class="lesson-card">
                             <div>
-                                <p><strong>Data:</strong> <?php echo date('d.m.Y', strtotime($jazda['data_jazdy'])); ?></p>
-                                <p><strong>Godzina:</strong> <?php echo date('H:i', strtotime($jazda['godzina_rozpoczecia'])); ?></p>
+                                <p><strong>Data i godzina:</strong> <?php echo date('d.m.Y H:i', strtotime($jazda['data_jazdy'])); ?></p>
                                 <p><strong>Instruktor:</strong> <?php echo htmlspecialchars($jazda['instruktor_imie'] . ' ' . $jazda['instruktor_nazwisko']); ?></p>
-                                <p><strong>Pojazd:</strong> <?php echo htmlspecialchars($jazda['marka'] . ' ' . $jazda['model']); ?></p>
-                                <p><strong>Liczba godzin:</strong> <?php echo $jazda['liczba_godzin']; ?></p>
                             </div>
                             <div>
-                                <form method="POST" action="anuluj_jazde.php">
+                                <form method="POST" action="">
                                     <input type="hidden" name="jazda_id" value="<?php echo $jazda['id']; ?>">
-                                    <button type="submit" class="btn danger">Anuluj</button>
+                                    <button type="submit" name="anuluj_jazde" class="btn danger" onclick="return confirm('Czy na pewno chcesz anulować tę jazdę?');">Anuluj</button>
                                 </form>
                             </div>
                         </div>

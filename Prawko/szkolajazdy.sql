@@ -165,7 +165,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- Wstawianie przykładowych użytkowników
 INSERT INTO uzytkownicy (login, imie, nazwisko, email, telefon, data_urodzenia, haslo, kategoria_prawa_jazdy, rola) VALUES
 ('jan_kowalski', 'Jan', 'Kowalski', 'jan.kowalski@email.com', '123456789', '1990-05-15', '$2y$10$abcdefghijklmnopqrstuv', 'B', 'kursant'),
-('anna_nowak', 'Anna', 'Nowak', 'anna.nowak@email.com', '987654321', '1995-08-22', '$2y$10$abcdefghijklmnopqrstuv', 'A', 'kursant'),
+('anna_nowak', 'Anna', 'Nowak', 'anna.nowak@email.com', '987654321', '1995-08-22', '123', 'A', 'kursant'),
 ('piotr_wisniewski', 'Piotr', 'Wiśniewski', 'piotr.wisniewski@email.com', '555666777', '1988-03-10', '$2y$10$abcdefghijklmnopqrstuv', 'C', 'kursant'),
 ('maria_dabrowska', 'Maria', 'Dąbrowska', 'maria.dabrowska@email.com', '111222333', '1992-11-30', '$2y$10$abcdefghijklmnopqrstuv', 'B', 'kursant'),
 ('tomasz_lewandowski', 'Tomasz', 'Lewandowski', 'tomasz.lew@email.com', '444555666', '1993-07-25', '$2y$10$abcdefghijklmnopqrstuv', 'D', 'kursant'),
