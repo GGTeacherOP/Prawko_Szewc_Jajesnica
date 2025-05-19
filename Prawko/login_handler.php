@@ -24,16 +24,28 @@ try {
     
     // Prepare query based on login type
     if ($is_email) {
-        $stmt = $conn->prepare("SELECT * FROM uzytkownicy WHERE email = ?");
-        error_log("Searching by email");
+        // First check instructors table
+        $stmt = $conn->prepare("SELECT *, 'instruktor' as rola FROM instruktorzy WHERE email = ?");
+        error_log("Searching instructors by email");
+        $stmt->bind_param("s", $login);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows === 0) {
+            // If not found in instructors, check users table
+            $stmt = $conn->prepare("SELECT * FROM uzytkownicy WHERE email = ?");
+            error_log("Searching users by email");
+            $stmt->bind_param("s", $login);
+            $stmt->execute();
+            $result = $stmt->get_result();
+        }
     } else {
         $stmt = $conn->prepare("SELECT * FROM uzytkownicy WHERE login = ?");
         error_log("Searching by login");
+        $stmt->bind_param("s", $login);
+        $stmt->execute();
+        $result = $stmt->get_result();
     }
-    
-    $stmt->bind_param("s", $login);
-    $stmt->execute();
-    $result = $stmt->get_result();
     
     error_log("Query results found: " . $result->num_rows);
     

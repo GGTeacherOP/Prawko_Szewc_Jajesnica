@@ -15,10 +15,15 @@ $stmt = $conn->prepare("
     SELECT k.kategoria, k.nazwa, z.status, COUNT(j.id) as liczba_jazd
     FROM zapisy z 
     JOIN kursy k ON z.kurs_id = k.id 
-    LEFT JOIN jazdy j ON z.uzytkownik_id = j.uzytkownik_id AND j.status != 'Anulowana'
+    LEFT JOIN jazdy j ON z.uzytkownik_id = j.kursant_id AND j.status != 'Anulowana'
     WHERE z.uzytkownik_id = ? AND z.status = 'Zatwierdzony'
     GROUP BY k.id
 ");
+
+if ($stmt === false) {
+    die("Błąd przygotowania zapytania: " . $conn->error);
+}
+
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();

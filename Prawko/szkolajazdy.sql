@@ -47,7 +47,8 @@ CREATE TABLE IF NOT EXISTS instruktorzy (
     email VARCHAR(100) UNIQUE NOT NULL,
     telefon VARCHAR(20) NOT NULL,
     haslo VARCHAR(255) NOT NULL,
-    kategorie_uprawnien SET('A', 'B', 'C', 'D') NOT NULL
+    kategorie_uprawnien SET('A', 'B', 'C', 'D') NOT NULL,
+    rola ENUM('instruktor') DEFAULT 'instruktor'
 );
 
 -- Vehicles table
@@ -225,17 +226,29 @@ INSERT INTO kursy (nazwa, kategoria, opis, cena) VALUES
 ('Kurs instruktorski', 'Instruktorzy', 'Kurs dla przyszłych instruktorów', 5000.00);
 
 -- Wstawianie przykładowych instruktorów
-INSERT INTO instruktorzy (imie, nazwisko, email, telefon, haslo, kategorie_uprawnien) VALUES
-('Marek', 'Kowalczyk', 'marek.kowalczyk@szkola.pl', '111333555', '$2y$10$abcdefghijklmnopqrstuv', 'A,B'),
-('Barbara', 'Wojcik', 'barbara.wojcik@szkola.pl', '222444666', '$2y$10$abcdefghijklmnopqrstuv', 'B,C'),
-('Krzysztof', 'Nowicki', 'krzysztof.nowicki@szkola.pl', '333555777', '$2y$10$abcdefghijklmnopqrstuv', 'A,B,C,D'),
-('Ewa', 'Kamińska', 'ewa.kaminska@szkola.pl', '444666888', '$2y$10$abcdefghijklmnopqrstuv', 'B'),
-('Adam', 'Zieliński', 'adam.zielinski@szkola.pl', '555777999', '$2y$10$abcdefghijklmnopqrstuv', 'C,D'),
-('Dorota', 'Szymańska', 'dorota.szymanska@szkola.pl', '666888000', '$2y$10$abcdefghijklmnopqrstuv', 'A,B'),
-('Robert', 'Dąbrowski', 'robert.dabrowski@szkola.pl', '777999111', '$2y$10$abcdefghijklmnopqrstuv', 'B,C,D'),
-('Małgorzata', 'Kozłowska', 'malgorzata.kozlowska@szkola.pl', '888000222', '$2y$10$abcdefghijklmnopqrstuv', 'A,B'),
-('Tomasz', 'Jankowski', 'tomasz.jankowski@szkola.pl', '999111333', '$2y$10$abcdefghijklmnopqrstuv', 'B,C'),
-('Anna', 'Wojciechowska', 'anna.wojciechowska@szkola.pl', '000222444', '$2y$10$abcdefghijklmnopqrstuv', 'A,B,C,D');
+INSERT INTO instruktorzy (imie, nazwisko, email, telefon, haslo, kategorie_uprawnien, rola) VALUES
+('Marek', 'Kowalczyk', 'marek.kowalczyk@szkola.pl', '111333555', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'A,B', 'instruktor'),
+('Barbara', 'Wojcik', 'barbara.wojcik@szkola.pl', '222444666', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'B,C', 'instruktor'),
+('Krzysztof', 'Nowicki', 'krzysztof.nowicki@szkola.pl', '333555777', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'A,B,C,D', 'instruktor'),
+('Ewa', 'Kamińska', 'ewa.kaminska@szkola.pl', '444666888', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'B', 'instruktor'),
+('Adam', 'Zieliński', 'adam.zielinski@szkola.pl', '555777999', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'C,D', 'instruktor'),
+('Dorota', 'Szymańska', 'dorota.szymanska@szkola.pl', '666888000', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'A,B', 'instruktor'),
+('Robert', 'Dąbrowski', 'robert.dabrowski@szkola.pl', '777999111', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'B,C,D', 'instruktor'),
+('Małgorzata', 'Kozłowska', 'malgorzata.kozlowska@szkola.pl', '888000222', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'A,B', 'instruktor'),
+('Tomasz', 'Jankowski', 'tomasz.jankowski@szkola.pl', '999111333', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'B,C', 'instruktor'),
+('Anna', 'Wojciechowska', 'anna.wojciechowska@szkola.pl', '000222444', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'A,B,C,D', 'instruktor');
+
+-- Insert test instructor accounts with easy passwords (password: 123456)
+INSERT INTO instruktorzy (imie, nazwisko, email, telefon, haslo, kategorie_uprawnien, rola) VALUES
+('Jan', 'Kowalski', 'jan.kowalski@example.com', '123456789', 
+ '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'A,B,C', 'instruktor'),
+('Anna', 'Nowak', 'anna.nowak@example.com', '987654321',
+ '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'B,C', 'instruktor'),
+('Piotr', 'Wiśniewski', 'piotr.wisniewski@example.com', '555666777',
+ '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'A,B,C,D', 'instruktor')
+ON DUPLICATE KEY UPDATE 
+    haslo = '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+    rola = 'instruktor';
 
 -- Wstawianie przykładowych pojazdów
 INSERT INTO pojazdy (marka, model, rok_produkcji, kategoria_prawa_jazdy, stan_techniczny) VALUES

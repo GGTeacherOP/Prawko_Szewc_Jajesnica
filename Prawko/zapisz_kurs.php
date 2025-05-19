@@ -58,6 +58,9 @@ try {
 
     // Check if user is already enrolled in this course
     $stmt = $conn->prepare("SELECT id, status FROM zapisy WHERE uzytkownik_id = ? AND kurs_id = ?");
+    if ($stmt === false) {
+        throw new Exception("Błąd przygotowania zapytania: " . $conn->error);
+    }
     $stmt->bind_param("ii", $user_id, $kurs_id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -87,6 +90,9 @@ try {
                                   AND waznosc_do >= CURDATE()
                                   AND typ = 'Podstawowe'
                                   AND status = 'Zatwierdzony'");
+            if ($stmt === false) {
+                throw new Exception("Błąd przygotowania zapytania: " . $conn->error);
+            }
             $stmt->bind_param("i", $user_id);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -96,6 +102,9 @@ try {
 
         // Create enrollment with appropriate status
         $stmt = $conn->prepare("INSERT INTO zapisy (uzytkownik_id, kurs_id, status) VALUES (?, ?, ?)");
+        if ($stmt === false) {
+            throw new Exception("Błąd przygotowania zapytania: " . $conn->error);
+        }
         $status = ($requires_medical && !$has_valid_medical) ? 'Oczekujący' : 'Zatwierdzony';
         $stmt->bind_param("iis", $user_id, $kurs_id, $status);
         
@@ -105,9 +114,11 @@ try {
         $stmt->close();
 
         // Create payment record
-        $stmt = $conn->prepare("INSERT INTO platnosci (uzytkownik_id, kurs_id, kwota, status, opis) VALUES (?, ?, ?, 'Oczekujący', ?)");
-        $opis = "Opłata za kurs: " . $kurs['nazwa'];
-        $stmt->bind_param("iids", $user_id, $kurs_id, $cena, $opis);
+        $stmt = $conn->prepare("INSERT INTO platnosci (uzytkownik_id, kurs_id, kwota, status) VALUES (?, ?, ?, 'Oczekujący')");
+        if ($stmt === false) {
+            throw new Exception("Błąd przygotowania zapytania: " . $conn->error);
+        }
+        $stmt->bind_param("iid", $user_id, $kurs_id, $cena);
         
         if (!$stmt->execute()) {
             throw new Exception("Błąd podczas tworzenia płatności: " . $stmt->error);

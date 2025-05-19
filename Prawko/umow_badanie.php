@@ -60,9 +60,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $conn->begin_transaction();
         
         // Add examination record
-        $stmt = $conn->prepare("INSERT INTO badania (uzytkownik_id, typ, data_badania, status, kwota) VALUES (?, ?, ?, 'Zaplanowane', ?)");
-        $data_badania = $selected_date . ' ' . $selected_time;
-        $stmt->bind_param("issd", $user_id, $typ_badania, $data_badania, $kwota);
+        $stmt = $conn->prepare("INSERT INTO badania (uzytkownik_id, data_badania, wynik, waznosc_do) VALUES (?, ?, 'Pozytywny', DATE_ADD(?, INTERVAL 1 YEAR))");
+        if ($stmt === false) {
+            throw new Exception("Błąd przygotowania zapytania: " . $conn->error);
+        }
+        $data_badania = $selected_date;
+        $stmt->bind_param("iss", $user_id, $data_badania, $data_badania);
         
         if (!$stmt->execute()) {
             throw new Exception("Błąd podczas zapisywania badania: " . $stmt->error);
@@ -70,9 +73,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $badanie_id = $stmt->insert_id;
         
         // Add payment record
-        $stmt = $conn->prepare("INSERT INTO platnosci (uzytkownik_id, badanie_id, kwota, status, opis) VALUES (?, ?, ?, 'Oczekujący', ?)");
-        $opis = "Opłata za badanie " . strtolower($typ_badania);
-        $stmt->bind_param("iids", $user_id, $badanie_id, $kwota, $opis);
+        $stmt = $conn->prepare("INSERT INTO platnosci (uzytkownik_id, kwota, status) VALUES (?, ?, 'Oczekujący')");
+        if ($stmt === false) {
+            throw new Exception("Błąd przygotowania zapytania: " . $conn->error);
+        }
+        $stmt->bind_param("id", $user_id, $kwota);
         
         if (!$stmt->execute()) {
             throw new Exception("Błąd podczas tworzenia płatności: " . $stmt->error);
