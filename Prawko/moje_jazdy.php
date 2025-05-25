@@ -12,17 +12,20 @@ $user_id = $_SESSION['user_id'];
 
 // Pobierz zaplanowane jazdy
 $query = "SELECT j.*, 
-          i.imie as instruktor_imie, 
-          i.nazwisko as instruktor_nazwisko,
+          p.imie as instruktor_imie, 
+          p.nazwisko as instruktor_nazwisko,
           k.nazwa as kurs_nazwa,
           k.kategoria as kurs_kategoria
           FROM jazdy j
-          LEFT JOIN instruktorzy i ON j.instruktor_id = i.id
+          LEFT JOIN pracownicy p ON j.instruktor_id = p.id
           LEFT JOIN kursy k ON j.kurs_id = k.id
           WHERE j.kursant_id = ?
           ORDER BY j.data_jazdy ASC";
 
 $stmt = $conn->prepare($query);
+if (!$stmt) {
+    die("Błąd SQL: " . $conn->error);
+}
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();

@@ -49,14 +49,16 @@ function createTables($conn) {
         FOREIGN KEY (kurs_id) REFERENCES kursy(id)
     )";
 
-    // Instruktorzy table
-    $instruktorzy_table = "CREATE TABLE IF NOT EXISTS instruktorzy (
+    // Pracownicy table
+    $pracownicy_table = "CREATE TABLE IF NOT EXISTS pracownicy (
         id INT(11) AUTO_INCREMENT PRIMARY KEY,
         imie VARCHAR(50) NOT NULL,
         nazwisko VARCHAR(50) NOT NULL,
         email VARCHAR(100) UNIQUE NOT NULL,
         telefon VARCHAR(20) NOT NULL,
-        kategorie_uprawnien SET('A', 'B', 'C', 'D') NOT NULL
+        haslo VARCHAR(255) NOT NULL,
+        kategorie_uprawnien SET('A', 'B', 'C', 'D') NOT NULL,
+        rola ENUM('instruktor', 'ksiegowy', 'admin') NOT NULL DEFAULT 'instruktor'
     )";
 
     // Pojazdy table
@@ -100,7 +102,7 @@ function createTables($conn) {
         data_zakonczenia DATETIME NOT NULL,
         max_uczestnikow INT(11) NOT NULL,
         FOREIGN KEY (kurs_id) REFERENCES kursy(id),
-        FOREIGN KEY (instruktor_id) REFERENCES instruktorzy(id)
+        FOREIGN KEY (instruktor_id) REFERENCES pracownicy(id)
     )";
 
     // Certyfikaty table
@@ -129,7 +131,7 @@ function createTables($conn) {
     // Execute table creation queries
     $tables = [
         $users_table, $kursy_table, $zapisy_table, 
-        $instruktorzy_table, $pojazdy_table, $badania_table, 
+        $pracownicy_table, $pojazdy_table, $badania_table, 
         $platnosci_table, $terminy_table, $certyfikaty_table, 
         $opinie_table
     ];

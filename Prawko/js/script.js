@@ -1,21 +1,37 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize AOS
-    AOS.init({
-        duration: 1000,
-        once: true,
-        offset: 100
-    });
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100
+        });
+    }
 
     // Mobile navigation toggle
     const navToggle = document.querySelector('.nav-toggle');
     const navUl = document.querySelector('nav ul');
 
-    if (navToggle) {
+    if (navToggle && navUl) {
         navToggle.addEventListener('click', () => {
             navUl.classList.toggle('active');
             const icon = navToggle.querySelector('i');
-            icon.classList.toggle('fa-bars');
-            icon.classList.toggle('fa-times');
+            if (icon) {
+                icon.classList.toggle('fa-bars');
+                icon.classList.toggle('fa-times');
+            }
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!navToggle.contains(e.target) && !navUl.contains(e.target)) {
+                navUl.classList.remove('active');
+                const icon = navToggle.querySelector('i');
+                if (icon) {
+                    icon.classList.add('fa-bars');
+                    icon.classList.remove('fa-times');
+                }
+            }
         });
     }
 
@@ -37,26 +53,28 @@ document.addEventListener('DOMContentLoaded', function() {
     const header = document.querySelector('header');
     let lastScroll = 0;
 
-    window.addEventListener('scroll', () => {
-        const currentScroll = window.pageYOffset;
-        
-        if (currentScroll <= 0) {
-            header.classList.remove('scroll-up');
-            return;
-        }
-        
-        if (currentScroll > lastScroll && !header.classList.contains('scroll-down')) {
-            // Scrolling down
-            header.classList.remove('scroll-up');
-            header.classList.add('scroll-down');
-        } else if (currentScroll < lastScroll && header.classList.contains('scroll-down')) {
-            // Scrolling up
-            header.classList.remove('scroll-down');
-            header.classList.add('scroll-up');
-        }
-        
-        lastScroll = currentScroll;
-    });
+    if (header) {
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            
+            if (currentScroll <= 0) {
+                header.classList.remove('scroll-up');
+                return;
+            }
+            
+            if (currentScroll > lastScroll && !header.classList.contains('scroll-down')) {
+                // Scrolling down
+                header.classList.remove('scroll-up');
+                header.classList.add('scroll-down');
+            } else if (currentScroll < lastScroll && header.classList.contains('scroll-down')) {
+                // Scrolling up
+                header.classList.remove('scroll-down');
+                header.classList.add('scroll-up');
+            }
+            
+            lastScroll = currentScroll;
+        });
+    }
 
     // Add ripple effect to buttons
     document.querySelectorAll('.btn').forEach(button => {
@@ -118,5 +136,16 @@ document.addEventListener('DOMContentLoaded', function() {
         field.addEventListener('focus', function() {
             this.classList.remove('error');
         });
+    });
+
+    // Add active class to current page link
+    const currentPage = window.location.pathname.split('/').pop();
+    const navLinks = document.querySelectorAll('nav ul li a');
+    
+    navLinks.forEach(link => {
+        const linkPage = link.getAttribute('href');
+        if (linkPage === currentPage) {
+            link.classList.add('active');
+        }
     });
 }); 

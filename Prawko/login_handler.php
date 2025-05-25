@@ -18,91 +18,53 @@ if (empty($login) || empty($haslo)) {
 }
 
 try {
-    // Check if login is email
-    $is_email = filter_var($login, FILTER_VALIDATE_EMAIL);
-    error_log("Is email format: " . ($is_email ? "yes" : "no"));
-    
-    // Prepare query based on login type
-    if ($is_email) {
-        // First check instructors table
-        $stmt = $conn->prepare("SELECT *, 'instruktor' as rola FROM instruktorzy WHERE email = ?");
-        error_log("Searching instructors by email");
-        $stmt->bind_param("s", $login);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        
-        if ($result->num_rows === 0) {
-            // If not found in instructors, check users table
-            $stmt = $conn->prepare("SELECT * FROM uzytkownicy WHERE email = ?");
-            error_log("Searching users by email");
-            $stmt->bind_param("s", $login);
-            $stmt->execute();
-            $result = $stmt->get_result();
-        }
-    } else {
-        $stmt = $conn->prepare("SELECT * FROM uzytkownicy WHERE login = ?");
-        error_log("Searching by login");
-        $stmt->bind_param("s", $login);
-        $stmt->execute();
-        $result = $stmt->get_result();
+    // Najpierw próbujemy zalogować kursanta po loginie
+    $stmt = $conn->prepare("SELECT * FROM uzytkownicy WHERE login = ? AND haslo = ?");
+    if (!$stmt) {
+        die("Błąd SQL (uzytkownicy): " . $conn->error);
     }
-    
-    error_log("Query results found: " . $result->num_rows);
-    
-    if ($result->num_rows === 0) {
-        error_log("Error: No user found");
-        header("Location: login.php?errors=" . urlencode("Nieprawidłowy login lub hasło."));
+    $stmt->bind_param("ss", $login, $haslo);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows === 1) {
+        $user = $result->fetch_assoc();
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['rola'] = $user['rola'];
+        $_SESSION['imie'] = $user['imie'];
+        header("Location: dashboard.php");
         exit();
     }
-    
-    $user = $result->fetch_assoc();
-    
-    // Log user data (except password)
-    error_log("User found:");
-    error_log("ID: " . $user['id']);
-    error_log("Login: " . $user['login']);
-    error_log("Email: " . $user['email']);
-    error_log("Role: " . ($user['rola'] ?? 'not set'));
-    error_log("Stored password hash length: " . strlen($user['haslo']));
-    
-    // Verify password
-    $password_verify_result = password_verify($haslo, $user['haslo']);
-    error_log("Password verification result: " . ($password_verify_result ? "success" : "failed"));
-    
-    if (!$password_verify_result) {
-        error_log("Error: Password verification failed");
-        header("Location: login.php?errors=" . urlencode("Nieprawidłowy login lub hasło."));
-        exit();
+
+    // Jeśli nie znaleziono kursanta, próbujemy pracownika po emailu
+    $stmt = $conn->prepare("SELECT * FROM pracownicy WHERE email = ? AND haslo = ?");
+    if (!$stmt) {
+        die("Błąd SQL (pracownicy): " . $conn->error);
     }
-    
-    // Set session variables
-    $_SESSION['user_id'] = $user['id'];
-    $_SESSION['user_name'] = $user['imie'] . ' ' . $user['nazwisko'];
-    $_SESSION['rola'] = $user['rola'];
-    $_SESSION['user_email'] = $user['email'];
-    
-    error_log("Session variables set:");
-    error_log("user_id: " . $_SESSION['user_id']);
-    error_log("user_name: " . $_SESSION['user_name']);
-    error_log("rola: " . $_SESSION['rola']);
-    error_log("user_email: " . $_SESSION['user_email']);
-    
-    // Redirect based on role
-    switch ($user['rola']) {
-        case 'admin':
-            error_log("Redirecting to admin dashboard");
-            header("Location: admin/dashboard.php");
-            break;
-        case 'instruktor':
-            error_log("Redirecting to instructor panel");
+    $stmt->bind_param("ss", $login, $haslo);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows === 1) {
+        $pracownik = $result->fetch_assoc();
+        $_SESSION['user_id'] = $pracownik['id'];
+        $_SESSION['rola'] = $pracownik['rola'];
+        $_SESSION['imie'] = $pracownik['imie'];
+        // Przekierowanie do odpowiedniego panelu
+        if ($pracownik['rola'] === 'instruktor') {
             header("Location: panel_instruktora.php");
-            break;
-        case 'kursant':
-        default:
-            error_log("Redirecting to student dashboard");
-            header("Location: dashboard.php");
-            break;
+        } elseif ($pracownik['rola'] === 'ksiegowy') {
+            header("Location: panel_ksiegowy.php");
+        } elseif ($pracownik['rola'] === 'admin') {
+            header("Location: panel_admin.php");
+        } else {
+            header("Location: index.php");
+        }
+        exit();
     }
+
+    // Jeśli nie znaleziono użytkownika ani pracownika
+    header("Location: login.php?errors=" . urlencode("Nieprawidłowy login lub hasło."));
     exit();
     
 } catch (Exception $e) {
