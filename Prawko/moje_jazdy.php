@@ -95,7 +95,7 @@ $result = $stmt->get_result();
     </style>
 </head>
 <body>
-    <?php include 'header.php'; ?>
+<?php include 'header.php'; ?>
 
     <div class="jazdy-container">
         <h1>Moje Jazdy</h1>
@@ -116,7 +116,7 @@ $result = $stmt->get_result();
                     <div class="jazda-header">
                         <h3><?php echo htmlspecialchars($jazda['kurs_nazwa']); ?> - <?php echo htmlspecialchars($jazda['kurs_kategoria']); ?></h3>
                         <div class="action-buttons">
-                            <?php if(strtotime($jazda['data_jazdy']) > time()): ?>
+                            <?php if(strtotime($jazda['data_jazdy']) > time() && $jazda['status'] !== 'Anulowana'): ?>
                                 <a href="anuluj_jazde.php?id=<?php echo $jazda['id']; ?>" class="btn-cancel" 
                                    onclick="return confirm('Czy na pewno chcesz anulować tę jazdę?')">
                                     Anuluj Jazdę

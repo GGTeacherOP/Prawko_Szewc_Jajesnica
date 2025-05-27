@@ -19,21 +19,36 @@ if (empty($login) || empty($haslo)) {
 
 try {
     // Najpierw próbujemy zalogować kursanta po loginie
-    $stmt = $conn->prepare("SELECT * FROM uzytkownicy WHERE login = ? AND haslo = ?");
+    $stmt = $conn->prepare("SELECT * FROM uzytkownicy WHERE login = ?");
     if (!$stmt) {
         die("Błąd SQL (uzytkownicy): " . $conn->error);
     }
-    $stmt->bind_param("ss", $login, $haslo);
+    $stmt->bind_param("s", $login);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($result->num_rows === 1) {
         $user = $result->fetch_assoc();
-        $_SESSION['user_id'] = $user['id'];
-        $_SESSION['rola'] = $user['rola'];
-        $_SESSION['imie'] = $user['imie'];
-        header("Location: dashboard.php");
-        exit();
+        $hash = $user['haslo'];
+        // Jeśli hasło jest hashowane (nowe konto)
+        if (strpos($hash, '$2') === 0) {
+            if (password_verify($haslo, $hash)) {
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['rola'] = $user['rola'];
+                $_SESSION['imie'] = $user['imie'];
+                header("Location: dashboard.php");
+                exit();
+            }
+        } else {
+            // Stare konto - porównanie tekstowe
+            if ($haslo === $hash) {
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['rola'] = $user['rola'];
+                $_SESSION['imie'] = $user['imie'];
+                header("Location: dashboard.php");
+                exit();
+            }
+        }
     }
 
     // Jeśli nie znaleziono kursanta, próbujemy pracownika po emailu

@@ -36,12 +36,11 @@ session_start();
                 <p>Oferujemy kompleksowe szkolenia dla kierowców zawodowych, spełniające wszystkie wymogi prawne i standardy branżowe.</p>
             </div>
 
-            <div class="courses-grid">
+            <div class="course-list-container">
                 <!-- Kwalifikacja Wstępna -->
-                <div class="course-card" data-aos="fade-up">
+                <div class="info-box" data-aos="fade-up">
                     <h3>Kurs Kierowcy Zawodowego</h3>
-                    <p>Kwalifikacja wstępna dla kierowców zawodowych</p>
-                    <ul>
+                    <ul class="benefits-list">
                         <li>280 godzin zajęć teoretycznych</li>
                         <li>20 godzin zajęć praktycznych</li>
                         <li>Egzamin państwowy</li>
@@ -55,10 +54,9 @@ session_start();
                 </div>
 
                 <!-- Kwalifikacja Okresowa -->
-                <div class="course-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="info-box" data-aos="fade-up" data-aos-delay="100">
                     <h3>Kwalifikacja Okresowa</h3>
-                    <p>Szkolenie okresowe dla kierowców zawodowych</p>
-                    <ul>
+                    <ul class="benefits-list">
                         <li>35 godzin zajęć</li>
                         <li>Aktualizacja wiedzy</li>
                         <li>Certyfikat ukończenia</li>
@@ -70,10 +68,10 @@ session_start();
                 </div>
 
                 <!-- Kurs ADR -->
-                <div class="course-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="info-box" data-aos="fade-up" data-aos-delay="200">
                     <h3>Kurs ADR</h3>
-                    <p>Przewóz materiałów niebezpiecznych</p>
-                    <ul>
+                    <ul class="benefits-list">
+                        <li>Przewóz materiałów niebezpiecznych</li>
                         <li>24 godziny zajęć</li>
                         <li>Praktyczne ćwiczenia</li>
                         <li>Egzamin ADR</li>
@@ -85,9 +83,9 @@ session_start();
                 </div>
             </div>
 
-            <div class="course-requirements" data-aos="fade-up">
+            <div class="info-box" data-aos="fade-up">
                 <h3>Wymagania dla kandydatów</h3>
-                <ul>
+                <ul class="benefits-list">
                     <li>Ukończone 21 lat (18 lat w przypadku kwalifikacji wstępnej przyspieszonej)</li>
                     <li>Prawo jazdy odpowiedniej kategorii</li>
                     <li>Aktualne badania lekarskie i psychologiczne</li>
@@ -95,9 +93,9 @@ session_start();
                 </ul>
             </div>
 
-            <div class="course-benefits" data-aos="fade-up">
+            <div class="info-box" data-aos="fade-up">
                 <h3>Korzyści z ukończenia kursu</h3>
-                <ul>
+                <ul class="benefits-list">
                     <li>Możliwość podjęcia pracy jako kierowca zawodowy</li>
                     <li>Wyższe kwalifikacje zawodowe</li>
                     <li>Lepsze możliwości zatrudnienia</li>

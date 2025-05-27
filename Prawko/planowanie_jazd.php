@@ -61,8 +61,71 @@ echo "<!-- Course category: " . htmlspecialchars($kurs['kategoria']) . " -->\n";
 echo "<!-- Extracted category: " . htmlspecialchars($kategoria) . " -->\n";
 echo "<!-- Raw course data: " . print_r($kurs, true) . " -->\n";
 
-// Handle form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+// Handle lesson cancellation
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['anuluj_jazde'])) {
+    $jazda_id = $_POST['jazda_id'];
+    
+    // Debug information
+    error_log("Attempting to cancel lesson ID: " . $jazda_id);
+    error_log("User ID: " . $user_id);
+    
+    // Verify that the lesson belongs to the current user
+    $stmt = $conn->prepare("
+        SELECT id, status 
+        FROM jazdy 
+        WHERE id = ? AND kursant_id = ? AND status = 'Zaplanowana'
+    ");
+    
+    if ($stmt === false) {
+        error_log("Prepare failed: " . $conn->error);
+        $_SESSION['error_message'] = "Błąd podczas przygotowania zapytania.";
+        header("Location: planowanie_jazd.php");
+        exit();
+    }
+    
+    $stmt->bind_param("ii", $jazda_id, $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $jazda = $result->fetch_assoc();
+    
+    error_log("Found lesson: " . print_r($jazda, true));
+    
+    if ($jazda) {
+        // Update lesson status to 'Anulowana'
+        $update_stmt = $conn->prepare("
+            UPDATE jazdy 
+            SET status = 'Anulowana' 
+            WHERE id = ? AND kursant_id = ? AND status = 'Zaplanowana'
+        ");
+        
+        if ($update_stmt === false) {
+            error_log("Update prepare failed: " . $conn->error);
+            $_SESSION['error_message'] = "Błąd podczas przygotowania zapytania aktualizacji.";
+            header("Location: planowanie_jazd.php");
+            exit();
+        }
+        
+        $update_stmt->bind_param("ii", $jazda_id, $user_id);
+        $update_result = $update_stmt->execute();
+        
+        error_log("Update result: " . ($update_result ? "success" : "failed"));
+        error_log("Update affected rows: " . $update_stmt->affected_rows);
+        
+        if ($update_result && $update_stmt->affected_rows > 0) {
+            $_SESSION['success_message'] = "Jazda została anulowana pomyślnie.";
+        } else {
+            $_SESSION['error_message'] = "Wystąpił błąd podczas anulowania jazdy.";
+        }
+    } else {
+        $_SESSION['error_message'] = "Nie można anulować tej jazdy.";
+    }
+    
+    header("Location: planowanie_jazd.php");
+    exit();
+}
+
+// Handle form submission (planowanie jazdy)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['anuluj_jazde'])) {
     try {
         $instruktor_id = $_POST['instruktor'];
         $pojazd_id = $_POST['pojazd'];
@@ -111,7 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Get instructors for the course category
-$stmt = $conn->prepare("SELECT * FROM instruktorzy WHERE kategorie_uprawnien LIKE ?");
+$stmt = $conn->prepare("SELECT * FROM pracownicy WHERE rola = 'instruktor' AND kategorie_uprawnien LIKE ?");
 $kategoria_pattern = '%' . $kategoria . '%';
 echo "<!-- Debug: Szukana kategoria: " . htmlspecialchars($kategoria) . " -->\n";
 echo "<!-- Debug: Wzorzec wyszukiwania: " . htmlspecialchars($kategoria_pattern) . " -->\n";
@@ -121,7 +184,7 @@ $instruktorzy = $stmt->get_result();
 echo "<!-- Debug: Liczba znalezionych instruktorów: " . $instruktorzy->num_rows . " -->\n";
 
 // Pokaż wszystkich instruktorów dla debugowania
-$all_instructors = $conn->query("SELECT * FROM instruktorzy");
+$all_instructors = $conn->query("SELECT * FROM pracownicy WHERE rola = 'instruktor'");
 echo "<!-- Debug: Całkowita liczba instruktorów w bazie: " . $all_instructors->num_rows . " -->\n";
 while ($inst = $all_instructors->fetch_assoc()) {
     echo "<!-- Debug: Instruktor ID: " . $inst['id'] . ", Kategorie: " . $inst['kategorie_uprawnien'] . " -->\n";
@@ -137,50 +200,13 @@ $pojazdy = $stmt->get_result();
 $stmt = $conn->prepare("
     SELECT j.*, i.imie as instruktor_imie, i.nazwisko as instruktor_nazwisko
     FROM jazdy j
-    JOIN instruktorzy i ON j.instruktor_id = i.id
+    JOIN pracownicy i ON j.instruktor_id = i.id
     WHERE j.kursant_id = ? AND j.status = 'Zaplanowana'
     ORDER BY j.data_jazdy
 ");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $zaplanowane_jazdy = $stmt->get_result();
-
-// Handle lesson cancellation
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['anuluj_jazde'])) {
-    $jazda_id = $_POST['jazda_id'];
-    
-    // Verify that the lesson belongs to the current user and get instructor_id
-    $stmt = $conn->prepare("
-        SELECT id, instruktor_id, kurs_id 
-        FROM jazdy 
-        WHERE id = ? AND kursant_id = ? AND status = 'Zaplanowana'
-    ");
-    $stmt->bind_param("ii", $jazda_id, $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $jazda = $result->fetch_assoc();
-    
-    if ($jazda && $jazda['instruktor_id'] && $jazda['kurs_id']) {
-        // Update lesson status to 'Anulowana' while preserving all required fields
-        $stmt = $conn->prepare("
-            UPDATE jazdy 
-            SET status = 'Anulowana' 
-            WHERE id = ? AND instruktor_id = ? AND kurs_id = ?
-        ");
-        $stmt->bind_param("iii", $jazda_id, $jazda['instruktor_id'], $jazda['kurs_id']);
-        
-        if ($stmt->execute()) {
-            $_SESSION['success_message'] = "Jazda została anulowana pomyślnie.";
-        } else {
-            $_SESSION['error_message'] = "Wystąpił błąd podczas anulowania jazdy.";
-        }
-    } else {
-        $_SESSION['error_message'] = "Nie można anulować tej jazdy.";
-    }
-    
-    header("Location: planowanie_jazd.php");
-    exit();
-}
 ?>
 <!DOCTYPE html>
 <html lang="pl">
@@ -256,19 +282,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['anuluj_jazde'])) {
     </style>
 </head>
 <body>
-    <header class="scroll-up">
-        <nav>
-            <div class="logo">
-                <img src="logo.png" alt="Linia Nauka Jazdy Logo">
-            </div>
-            <ul>
-                <li><a href="index.php">Strona Główna</a></li>
-                <li><a href="dashboard.php">Panel</a></li>
-                <li><a href="logout.php">Wyloguj</a></li>
-            </ul>
-        </nav>
-    </header>
-
+<?php include 'header.php'; ?>
     <main>
         <div class="planning-container">
             <h1>Planowanie Jazd</h1>

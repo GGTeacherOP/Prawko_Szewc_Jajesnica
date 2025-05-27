@@ -45,19 +45,8 @@ function displayEnrollmentButton($course_type, $conn, $course_name = null) {
         }
         echo '</div>';
     } else {
-        // Add more descriptive error message
-        echo '<div class="error-message">';
-        if ($course_type === 'Prawo Jazdy' && isset($_GET['kategoria'])) {
-            echo 'Nie znaleziono kursu dla kategorii ' . htmlspecialchars($_GET['kategoria']) . '. ';
-            echo 'Prosimy o kontakt z administracją w celu uzyskania informacji o dostępności kursu.';
-        } else {
-            echo 'Nie znaleziono kursu typu: ' . htmlspecialchars($course_type);
-            if ($course_name) {
-                echo ' o nazwie: ' . htmlspecialchars($course_name);
-            }
-            echo '. Prosimy o kontakt z administracją.';
-        }
-        echo '</div>';
+        // NIE generuj żadnego komunikatu, jeśli kurs nie istnieje
+        // (usuń info-frame z tekstem 'Prosimy o kontakt z administracją.')
     }
     $stmt->close();
 }

@@ -78,7 +78,7 @@ if ($latest_examination) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Użytkownika - Linia Nauka Jazdy</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="styles.css">
     <style>
         .dashboard-container {
             max-width: 1200px;
@@ -216,159 +216,159 @@ if ($latest_examination) {
     </style>
 </head>
 <body>
-    <?php include 'header.php'; ?>
+<?php include 'header.php'; ?>
     
-    <div class="dashboard-container">
-        <?php if(isset($_SESSION['success_message'])): ?>
-            <div class="success-message">
-                <?php 
-                    echo htmlspecialchars($_SESSION['success_message']);
-                    unset($_SESSION['success_message']);
-                ?>
-            </div>
-        <?php endif; ?>
-
-        <?php if(isset($_SESSION['error_message'])): ?>
-            <div class="error-message">
-                <?php 
-                    echo htmlspecialchars($_SESSION['error_message']);
-                    unset($_SESSION['error_message']);
-                ?>
-            </div>
-        <?php endif; ?>
-
-        <div class="user-info">
-            <h2 class="section-title">Informacje o użytkowniku</h2>
-            <div class="info-card">
-                <div class="info-grid">
-                    <div>
-                        <h3>Dane osobowe</h3>
-                        <p><strong>Imię i nazwisko:</strong> <?php echo htmlspecialchars($user['imie'] . ' ' . $user['nazwisko']); ?></p>
-                        <p><strong>Email:</strong> <?php echo htmlspecialchars($user['email']); ?></p>
-                        <p><strong>Telefon:</strong> <?php echo htmlspecialchars($user['telefon']); ?></p>
-                    </div>
-                    <div>
-                        <h3>Uprawnienia</h3>
-                        <p><strong>Kategoria:</strong> <?php echo htmlspecialchars($user['kategoria_prawa_jazdy']); ?></p>
-                        <p><strong>Status badań:</strong> 
-                            <?php if ($has_valid_medical): ?>
-                                <span class="status pozytywny">Aktualne</span>
-                            <?php else: ?>
-                                <span class="status negatywny">Nieaktualne</span>
-                            <?php endif; ?>
-                        </p>
-                    </div>
-                </div>
-            </div>
+<div class="dashboard-container">
+    <?php if(isset($_SESSION['success_message'])): ?>
+        <div class="success-message">
+            <?php 
+                echo htmlspecialchars($_SESSION['success_message']);
+                unset($_SESSION['success_message']);
+            ?>
         </div>
+    <?php endif; ?>
 
-        <div class="courses-section">
-            <h2 class="section-title">Moje kursy</h2>
-            <?php if ($courses_result->num_rows > 0): ?>
-                <?php while ($course = $courses_result->fetch_assoc()): ?>
-                    <div class="course-card">
-                        <div>
-                            <h3><?php echo htmlspecialchars($course['nazwa']); ?></h3>
-                            <p>Kategoria: <?php echo htmlspecialchars($course['kategoria']); ?></p>
-                            <p>Status: <span class="status <?php echo strtolower($course['payment_status']); ?>">
-                                <?php 
-                                if ($course['payment_status'] === 'Opłacony') {
-                                    echo 'Opłacony';
-                                } elseif ($course['payment_status'] === 'Anulowany') {
-                                    echo 'Anulowany';
-                                } else {
-                                    echo 'Oczekujący na płatność';
-                                }
-                                ?>
-                            </span></p>
-                            <div class="course-requirements <?php echo ($course['payment_status'] === 'Opłacony') ? 'success' : 'warning'; ?>">
-                                <?php if ($course['payment_status'] !== 'Opłacony'): ?>
-                                    <p>❗ Wymagana płatność za kurs</p>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                        <div class="action-buttons">
-                            <?php if ($course['payment_status'] !== 'Opłacony'): ?>
-                                <a href="platnosci.php?kurs_id=<?php echo $course['id']; ?>" class="btn btn-primary small">Opłać kurs</a>
-                            <?php endif; ?>
-                            <?php if ($course['payment_status'] === 'Opłacony'): ?>
-                                <a href="moje_jazdy.php" class="btn btn-primary small">Moje jazdy</a>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                <?php endwhile; ?>
-            <?php else: ?>
-                <div class="info-card">
-                    <p>Nie jesteś zapisany na żaden kurs.</p>
-                    <a href="kursy.php" class="btn btn-primary">Przeglądaj kursy</a>
-                </div>
-            <?php endif; ?>
+    <?php if(isset($_SESSION['error_message'])): ?>
+        <div class="error-message">
+            <?php 
+                echo htmlspecialchars($_SESSION['error_message']);
+                unset($_SESSION['error_message']);
+            ?>
         </div>
+    <?php endif; ?>
 
-        <div class="examinations-section">
-            <h2 class="section-title">Badania lekarskie</h2>
-            <?php if (!$latest_examination): ?>
-                <div class="examination-card">
-                    <div>
-                        <p>Badanie dostępne</p>
-                    </div>
-                    <a href="umow_badanie.php" class="btn btn-primary">Umów badanie</a>
+    <div class="user-info">
+        <h2 class="section-title">Informacje o użytkowniku</h2>
+        <div class="info-card">
+            <div class="info-grid">
+                <div>
+                    <h3>Dane osobowe</h3>
+                    <p><strong>Imię i nazwisko:</strong> <?php echo htmlspecialchars($user['imie'] . ' ' . $user['nazwisko']); ?></p>
+                    <p><strong>Email:</strong> <?php echo htmlspecialchars($user['email']); ?></p>
+                    <p><strong>Telefon:</strong> <?php echo htmlspecialchars($user['telefon']); ?></p>
                 </div>
-            <?php else: ?>
-                <div class="info-card">
-                    <p>Brak historii badań lekarskich.</p>
-                    <a href="umow_badanie.php" class="btn btn-primary">Umów badanie</a>
+                <div>
+                    <h3>Uprawnienia</h3>
+                    <p><strong>Kategoria:</strong> <?php echo htmlspecialchars($user['kategoria_prawa_jazdy']); ?></p>
+                    <p><strong>Status badań:</strong> 
+                        <?php if ($has_valid_medical): ?>
+                            <span class="status pozytywny">Aktualne</span>
+                        <?php else: ?>
+                            <span class="status negatywny">Nieaktualne</span>
+                        <?php endif; ?>
+                    </p>
                 </div>
-            <?php endif; ?>
-        </div>
-
-        <div class="payments-section">
-            <h2 class="section-title">Płatności</h2>
-            <?php if ($payments_result->num_rows > 0): ?>
-                <?php while ($payment = $payments_result->fetch_assoc()): ?>
-                    <div class="payment-card">
-                        <div>
-                            <h3><?php echo $payment['kurs_nazwa'] ? htmlspecialchars($payment['kurs_nazwa']) : 'Opłata za badanie'; ?></h3>
-                            <p>Kwota: <?php echo number_format($payment['kwota'], 2); ?> PLN</p>
-                            <p>Data: <?php echo date('d.m.Y', strtotime($payment['data_platnosci'])); ?></p>
-                        </div>
-                        <span class="status <?php echo strtolower($payment['status']); ?>">
-                            <?php echo htmlspecialchars($payment['status']); ?>
-                        </span>
-                    </div>
-                <?php endwhile; ?>
-            <?php else: ?>
-                <div class="info-card">
-                    <p>Brak historii płatności.</p>
-                </div>
-            <?php endif; ?>
+            </div>
         </div>
     </div>
 
-    <script>
-        // Inicjalizacja tooltipów i innych elementów UI
-        document.addEventListener('DOMContentLoaded', function() {
-            // Dodaj animacje przy przewijaniu
-            const cards = document.querySelectorAll('.course-card, .examination-card, .payment-card');
-            cards.forEach(card => {
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(20px)';
-            });
+    <div class="courses-section">
+        <h2 class="section-title">Moje kursy</h2>
+        <?php if ($courses_result->num_rows > 0): ?>
+            <?php while ($course = $courses_result->fetch_assoc()): ?>
+                <div class="course-card">
+                    <div>
+                        <h3><?php echo htmlspecialchars($course['nazwa']); ?></h3>
+                        <p>Kategoria: <?php echo htmlspecialchars($course['kategoria']); ?></p>
+                        <p>Status: <span class="status <?php echo strtolower($course['payment_status']); ?>">
+                            <?php 
+                            if ($course['payment_status'] === 'Opłacony') {
+                                echo 'Opłacony';
+                            } elseif ($course['payment_status'] === 'Anulowany') {
+                                echo 'Anulowany';
+                            } else {
+                                echo 'Oczekujący na płatność';
+                            }
+                            ?>
+                        </span></p>
+                        <div class="course-requirements <?php echo ($course['payment_status'] === 'Opłacony') ? 'success' : 'warning'; ?>">
+                            <?php if ($course['payment_status'] !== 'Opłacony'): ?>
+                                <p>❗ Wymagana płatność za kurs</p>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <?php if ($course['payment_status'] !== 'Opłacony'): ?>
+                            <a href="platnosci.php?kurs_id=<?php echo $course['id']; ?>" class="btn btn-primary small">Opłać kurs</a>
+                        <?php endif; ?>
+                        <?php if ($course['payment_status'] === 'Opłacony'): ?>
+                            <a href="moje_jazdy.php" class="btn btn-primary small">Moje jazdy</a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endwhile; ?>
+        <?php else: ?>
+            <div class="info-card">
+                <p>Nie jesteś zapisany na żaden kurs.</p>
+                <a href="kursy.php" class="btn btn-primary">Przeglądaj kursy</a>
+            </div>
+        <?php endif; ?>
+    </div>
 
-            function checkScroll() {
-                cards.forEach(card => {
-                    const cardTop = card.getBoundingClientRect().top;
-                    if (cardTop < window.innerHeight - 100) {
-                        card.style.opacity = '1';
-                        card.style.transform = 'translateY(0)';
-                        card.style.transition = 'all 0.5s ease-out';
-                    }
-                });
-            }
+    <div class="examinations-section">
+        <h2 class="section-title">Badania lekarskie</h2>
+        <?php if (!$latest_examination): ?>
+            <div class="examination-card">
+                <div>
+                    <p>Badanie dostępne</p>
+                </div>
+                <a href="umow_badanie.php" class="btn btn-primary">Umów badanie</a>
+            </div>
+        <?php else: ?>
+            <div class="info-card">
+                <p>Brak historii badań lekarskich.</p>
+                <a href="umow_badanie.php" class="btn btn-primary">Umów badanie</a>
+            </div>
+        <?php endif; ?>
+    </div>
 
-            window.addEventListener('scroll', checkScroll);
-            checkScroll(); // Sprawdź widoczne elementy przy załadowaniu strony
+    <div class="payments-section">
+        <h2 class="section-title">Płatności</h2>
+        <?php if ($payments_result->num_rows > 0): ?>
+            <?php while ($payment = $payments_result->fetch_assoc()): ?>
+                <div class="payment-card">
+                    <div>
+                        <h3><?php echo $payment['kurs_nazwa'] ? htmlspecialchars($payment['kurs_nazwa']) : 'Opłata za badanie'; ?></h3>
+                        <p>Kwota: <?php echo number_format($payment['kwota'], 2); ?> PLN</p>
+                        <p>Data: <?php echo date('d.m.Y', strtotime($payment['data_platnosci'])); ?></p>
+                    </div>
+                    <span class="status <?php echo strtolower($payment['status']); ?>">
+                        <?php echo htmlspecialchars($payment['status']); ?>
+                    </span>
+                </div>
+            <?php endwhile; ?>
+        <?php else: ?>
+            <div class="info-card">
+                <p>Brak historii płatności.</p>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<script>
+    // Inicjalizacja tooltipów i innych elementów UI
+    document.addEventListener('DOMContentLoaded', function() {
+        // Dodaj animacje przy przewijaniu
+        const cards = document.querySelectorAll('.course-card, .examination-card, .payment-card');
+        cards.forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
         });
-    </script>
+
+        function checkScroll() {
+            cards.forEach(card => {
+                const cardTop = card.getBoundingClientRect().top;
+                if (cardTop < window.innerHeight - 100) {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                    card.style.transition = 'all 0.5s ease-out';
+                }
+            });
+        }
+
+        window.addEventListener('scroll', checkScroll);
+        checkScroll(); // Sprawdź widoczne elementy przy załadowaniu strony
+    });
+</script>
 </body>
 </html>
