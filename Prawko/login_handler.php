@@ -18,40 +18,53 @@ if (empty($login) || empty($haslo)) {
 }
 
 try {
-    // Najpierw próbujemy zalogować kursanta po loginie
-    $stmt = $conn->prepare("SELECT * FROM uzytkownicy WHERE login = ?");
+    // Try to find user by email or login
+    $stmt = $conn->prepare("SELECT * FROM uzytkownicy WHERE email = ? OR login = ?");
     if (!$stmt) {
         die("Błąd SQL (uzytkownicy): " . $conn->error);
     }
-    $stmt->bind_param("s", $login);
+    $stmt->bind_param("ss", $login, $login);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($result->num_rows === 1) {
         $user = $result->fetch_assoc();
         $hash = $user['haslo'];
-        // Jeśli hasło jest hashowane (nowe konto)
+        
+        // Check if password is hashed (new account)
         if (strpos($hash, '$2') === 0) {
             if (password_verify($haslo, $hash)) {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['rola'] = $user['rola'];
                 $_SESSION['imie'] = $user['imie'];
-                header("Location: dashboard.php");
+                
+                // Redirect based on role
+                if ($user['rola'] === 'admin') {
+                    header("Location: admin_panel.php");
+                } else {
+                    header("Location: dashboard.php");
+                }
                 exit();
             }
         } else {
-            // Stare konto - porównanie tekstowe
+            // Old account - direct comparison
             if ($haslo === $hash) {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['rola'] = $user['rola'];
                 $_SESSION['imie'] = $user['imie'];
-                header("Location: dashboard.php");
+                
+                // Redirect based on role
+                if ($user['rola'] === 'admin') {
+                    header("Location: admin_panel.php");
+                } else {
+                    header("Location: dashboard.php");
+                }
                 exit();
             }
         }
     }
 
-    // Jeśli nie znaleziono kursanta, próbujemy pracownika po emailu
+    // If no user found, try employees table
     $stmt = $conn->prepare("SELECT * FROM pracownicy WHERE email = ? AND haslo = ?");
     if (!$stmt) {
         die("Błąd SQL (pracownicy): " . $conn->error);
@@ -65,20 +78,21 @@ try {
         $_SESSION['user_id'] = $pracownik['id'];
         $_SESSION['rola'] = $pracownik['rola'];
         $_SESSION['imie'] = $pracownik['imie'];
-        // Przekierowanie do odpowiedniego panelu
+        
+        // Redirect to appropriate panel
         if ($pracownik['rola'] === 'instruktor') {
             header("Location: panel_instruktora.php");
         } elseif ($pracownik['rola'] === 'ksiegowy') {
             header("Location: panel_ksiegowy.php");
         } elseif ($pracownik['rola'] === 'admin') {
-            header("Location: panel_admin.php");
+            header("Location: admin_panel.php");
         } else {
             header("Location: index.php");
         }
         exit();
     }
 
-    // Jeśli nie znaleziono użytkownika ani pracownika
+    // If no user or employee found
     header("Location: login.php?errors=" . urlencode("Nieprawidłowy login lub hasło."));
     exit();
     

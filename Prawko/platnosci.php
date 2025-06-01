@@ -8,92 +8,180 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Check if course ID is provided
-if (!isset($_GET['kurs_id'])) {
-    $_SESSION['error_message'] = "Nie określono kursu.";
+// Check if payment type and ID are provided
+if (!isset($_GET['typ']) || (!isset($_GET['kurs_id']) && !isset($_GET['badanie_id']))) {
+    $_SESSION['error_message'] = "Nie określono typu płatności.";
     header("Location: dashboard.php");
     exit();
 }
 
 $user_id = $_SESSION['user_id'];
-$kurs_id = $_GET['kurs_id'];
+$payment_type = $_GET['typ'];
 
 try {
     $conn->begin_transaction();
 
-    // Get course details and check enrollment
-    $stmt = $conn->prepare("SELECT k.*, z.id as zapis_id, z.status as zapis_status
-                           FROM kursy k 
-                           JOIN zapisy z ON k.id = z.kurs_id 
-                           WHERE k.id = ? AND z.uzytkownik_id = ?");
-    if ($stmt === false) {
-        throw new Exception("Błąd przygotowania zapytania: " . $conn->error);
-    }
-    
-    $stmt->bind_param("ii", $kurs_id, $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    if ($result->num_rows === 0) {
-        throw new Exception("Nie jesteś zapisany na ten kurs.");
-    }
-    
-    $kurs = $result->fetch_assoc();
-    $stmt->close();
+    if ($payment_type === 'badanie') {
+        // Handle medical examination payment
+        if (!isset($_GET['badanie_id'])) {
+            throw new Exception("Nie określono badania.");
+        }
+        
+        $badanie_id = $_GET['badanie_id'];
+        
+        // Get examination details
+        $stmt = $conn->prepare("SELECT * FROM badania WHERE id = ? AND uzytkownik_id = ?");
+        if ($stmt === false) {
+            throw new Exception("Błąd przygotowania zapytania: " . $conn->error);
+        }
+        
+        $stmt->bind_param("ii", $badanie_id, $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows === 0) {
+            throw new Exception("Nie znaleziono badania.");
+        }
+        
+        $badanie = $result->fetch_assoc();
+        $stmt->close();
 
-    // Check for existing payments
-    $stmt = $conn->prepare("SELECT id, status FROM platnosci 
-                           WHERE kurs_id = ? AND uzytkownik_id = ? 
-                           ORDER BY id DESC LIMIT 1");
-    $stmt->bind_param("ii", $kurs_id, $user_id);
-    $stmt->execute();
-    $payment_result = $stmt->get_result();
-    $existing_payment = $payment_result->fetch_assoc();
-    $stmt->close();
+        // Check for existing payments
+        $stmt = $conn->prepare("SELECT id, status FROM platnosci 
+                               WHERE badanie_id = ? AND uzytkownik_id = ? 
+                               ORDER BY id DESC LIMIT 1");
+        $stmt->bind_param("ii", $badanie_id, $user_id);
+        $stmt->execute();
+        $payment_result = $stmt->get_result();
+        $existing_payment = $payment_result->fetch_assoc();
+        $stmt->close();
 
-    // Handle form submission
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        if ($existing_payment) {
-            if ($existing_payment['status'] === 'Opłacony') {
-                throw new Exception("Ten kurs został już opłacony.");
-            } elseif ($existing_payment['status'] === 'Oczekujący') {
-                // Update existing payment
-                $stmt = $conn->prepare("UPDATE platnosci SET 
-                                      status = 'Opłacony',
-                                      data_platnosci = NOW()
-                                      WHERE id = ?");
-                $stmt->bind_param("i", $existing_payment['id']);
+        // Handle form submission
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if ($existing_payment) {
+                if ($existing_payment['status'] === 'Opłacony') {
+                    throw new Exception("To badanie zostało już opłacone.");
+                } elseif ($existing_payment['status'] === 'Oczekujący') {
+                    // Update existing payment
+                    $stmt = $conn->prepare("UPDATE platnosci SET 
+                                          status = 'Opłacony',
+                                          data_platnosci = NOW()
+                                          WHERE id = ?");
+                    $stmt->bind_param("i", $existing_payment['id']);
+                }
+            } else {
+                // Create new payment
+                $stmt = $conn->prepare("INSERT INTO platnosci 
+                                      (uzytkownik_id, badanie_id, kwota, status, data_platnosci) 
+                                      VALUES (?, ?, ?, 'Opłacony', NOW())");
+                $cena_badania = 200; // Set the price for medical examination
+                $stmt->bind_param("iid", $user_id, $badanie_id, $cena_badania);
             }
-        } else {
-            // Create new payment
-            $stmt = $conn->prepare("INSERT INTO platnosci 
-                                  (uzytkownik_id, kurs_id, kwota, status, data_platnosci) 
-                                  VALUES (?, ?, ?, 'Opłacony', NOW())");
-            $stmt->bind_param("iid", $user_id, $kurs_id, $kurs['cena']);
+
+            if (!$stmt->execute()) {
+                throw new Exception("Błąd podczas przetwarzania płatności: " . $stmt->error);
+            }
+            $stmt->close();
+
+            // Update examination status
+            $stmt = $conn->prepare("UPDATE badania SET status = 'Pozytywny' 
+                                  WHERE id = ? AND uzytkownik_id = ?");
+            $stmt->bind_param("ii", $badanie_id, $user_id);
+            if (!$stmt->execute()) {
+                throw new Exception("Błąd podczas aktualizacji statusu badania: " . $stmt->error);
+            }
+            $stmt->close();
+
+            $conn->commit();
+            $_SESSION['success_message'] = "Płatność za badanie została zrealizowana pomyślnie.";
+            header("Location: dashboard.php");
+            exit();
         }
 
-        if (!$stmt->execute()) {
-            throw new Exception("Błąd podczas przetwarzania płatności: " . $stmt->error);
-        }
-        $stmt->close();
-
-        // Update enrollment status
-        $stmt = $conn->prepare("UPDATE zapisy SET status = 'Zatwierdzony' 
-                              WHERE kurs_id = ? AND uzytkownik_id = ?");
-        $stmt->bind_param("ii", $kurs_id, $user_id);
-        if (!$stmt->execute()) {
-            throw new Exception("Błąd podczas aktualizacji statusu zapisu: " . $stmt->error);
-        }
-        $stmt->close();
-
+        // If we get here, we're displaying the payment form
         $conn->commit();
-        $_SESSION['success_message'] = "Płatność została zrealizowana pomyślnie.";
-        header("Location: dashboard.php");
-        exit();
-    }
+    } else {
+        // Handle course payment (existing code)
+        if (!isset($_GET['kurs_id'])) {
+            throw new Exception("Nie określono kursu.");
+        }
+        
+        $kurs_id = $_GET['kurs_id'];
+        
+        // Get course details and check enrollment
+        $stmt = $conn->prepare("SELECT k.*, z.id as zapis_id, z.status as zapis_status
+                               FROM kursy k 
+                               JOIN zapisy z ON k.id = z.kurs_id 
+                               WHERE k.id = ? AND z.uzytkownik_id = ?");
+        if ($stmt === false) {
+            throw new Exception("Błąd przygotowania zapytania: " . $conn->error);
+        }
+        
+        $stmt->bind_param("ii", $kurs_id, $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows === 0) {
+            throw new Exception("Nie jesteś zapisany na ten kurs.");
+        }
+        
+        $kurs = $result->fetch_assoc();
+        $stmt->close();
 
-    // If we get here, we're displaying the payment form
-    $conn->commit();
+        // Check for existing payments
+        $stmt = $conn->prepare("SELECT id, status FROM platnosci 
+                               WHERE kurs_id = ? AND uzytkownik_id = ? 
+                               ORDER BY id DESC LIMIT 1");
+        $stmt->bind_param("ii", $kurs_id, $user_id);
+        $stmt->execute();
+        $payment_result = $stmt->get_result();
+        $existing_payment = $payment_result->fetch_assoc();
+        $stmt->close();
+
+        // Handle form submission
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if ($existing_payment) {
+                if ($existing_payment['status'] === 'Opłacony') {
+                    throw new Exception("Ten kurs został już opłacony.");
+                } elseif ($existing_payment['status'] === 'Oczekujący') {
+                    // Update existing payment
+                    $stmt = $conn->prepare("UPDATE platnosci SET 
+                                          status = 'Opłacony',
+                                          data_platnosci = NOW()
+                                          WHERE id = ?");
+                    $stmt->bind_param("i", $existing_payment['id']);
+                }
+            } else {
+                // Create new payment
+                $stmt = $conn->prepare("INSERT INTO platnosci 
+                                      (uzytkownik_id, kurs_id, kwota, status, data_platnosci) 
+                                      VALUES (?, ?, ?, 'Opłacony', NOW())");
+                $stmt->bind_param("iid", $user_id, $kurs_id, $kurs['cena']);
+            }
+
+            if (!$stmt->execute()) {
+                throw new Exception("Błąd podczas przetwarzania płatności: " . $stmt->error);
+            }
+            $stmt->close();
+
+            // Update enrollment status
+            $stmt = $conn->prepare("UPDATE zapisy SET status = 'Zatwierdzony' 
+                                  WHERE kurs_id = ? AND uzytkownik_id = ?");
+            $stmt->bind_param("ii", $kurs_id, $user_id);
+            if (!$stmt->execute()) {
+                throw new Exception("Błąd podczas aktualizacji statusu zapisu: " . $stmt->error);
+            }
+            $stmt->close();
+
+            $conn->commit();
+            $_SESSION['success_message'] = "Płatność za kurs została zrealizowana pomyślnie.";
+            header("Location: dashboard.php");
+            exit();
+        }
+
+        // If we get here, we're displaying the payment form
+        $conn->commit();
+    }
 } catch (Exception $e) {
     $conn->rollback();
     $_SESSION['error_message'] = $e->getMessage();
@@ -106,7 +194,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Płatność za kurs - Linia Nauka Jazdy</title>
+    <title><?php echo $payment_type === 'badanie' ? 'Płatność za badanie' : 'Płatność za kurs'; ?> - Linia Nauka Jazdy</title>
     <link rel="stylesheet" href="styles.css">
     <style>
         .payment-container {
@@ -180,12 +268,18 @@ try {
     <?php include 'header.php'; ?>
     
     <div class="payment-container">
-        <h1>Płatność za kurs</h1>
+        <h1><?php echo $payment_type === 'badanie' ? 'Płatność za badanie' : 'Płatność za kurs'; ?></h1>
         
         <div class="payment-details">
-            <h2><?php echo htmlspecialchars($kurs['nazwa']); ?></h2>
-            <p><strong>Kategoria:</strong> <?php echo htmlspecialchars($kurs['kategoria']); ?></p>
-            <p><strong>Kwota do zapłaty:</strong> <span style="font-size: 1.2em; color: var(--primary-color);"><?php echo number_format($kurs['cena'], 2); ?> PLN</span></p>
+            <?php if ($payment_type === 'badanie'): ?>
+                <h2>Badanie <?php echo htmlspecialchars($badanie['typ']); ?></h2>
+                <p><strong>Data badania:</strong> <?php echo date('d.m.Y', strtotime($badanie['data_badania'])); ?></p>
+                <p><strong>Kwota do zapłaty:</strong> <span style="font-size: 1.2em; color: var(--primary-color);">200.00 PLN</span></p>
+            <?php else: ?>
+                <h2><?php echo htmlspecialchars($kurs['nazwa']); ?></h2>
+                <p><strong>Kategoria:</strong> <?php echo htmlspecialchars($kurs['kategoria']); ?></p>
+                <p><strong>Kwota do zapłaty:</strong> <span style="font-size: 1.2em; color: var(--primary-color);"><?php echo number_format($kurs['cena'], 2); ?> PLN</span></p>
+            <?php endif; ?>
         </div>
 
         <form method="POST" class="payment-form">
@@ -195,7 +289,7 @@ try {
                 <div class="payment-info">
                     <p><strong>Bank:</strong> Example Bank</p>
                     <p><strong>Nr konta:</strong> 12 3456 7890 1234 5678 9012 3456</p>
-                    <p><strong>Tytuł przelewu:</strong> Kurs <?php echo htmlspecialchars($kurs['nazwa']); ?> - <?php echo $user_id; ?></p>
+                    <p><strong>Tytuł przelewu:</strong> <?php echo $payment_type === 'badanie' ? 'Badanie ' . htmlspecialchars($badanie['typ']) : 'Kurs ' . htmlspecialchars($kurs['nazwa']); ?> - <?php echo $user_id; ?></p>
                 </div>
             </div>
 

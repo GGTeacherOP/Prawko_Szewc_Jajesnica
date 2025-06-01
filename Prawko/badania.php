@@ -156,7 +156,11 @@ session_start();
                         </ul>
                     </div>
                     <div class="pricing-footer">
-                        <a href="#" class="btn primary" onclick="checkLoginAndRedirect(event)">Umów badanie</a>
+                        <?php if(isset($_SESSION['user_id'])): ?>
+                            <a href="umow_badanie.php?typ=instruktorskie" class="btn primary">Umów badanie</a>
+                        <?php else: ?>
+                            <a href="login.php" class="btn primary">Zaloguj się aby umówić</a>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

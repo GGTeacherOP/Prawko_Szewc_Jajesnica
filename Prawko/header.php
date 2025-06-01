@@ -27,7 +27,15 @@ if(isset($_SESSION['user_id'])) {
         <ul>
             <li><a href="index.php">Strona Główna</a></li>
             <?php if(isset($_SESSION['user_id'])): ?>
-                <?php if(isset($_SESSION['rola']) && $_SESSION['rola'] === 'instruktor'): ?>
+                <?php if(isset($_SESSION['rola']) && $_SESSION['rola'] === 'admin'): ?>
+                    <li><a href="admin_panel.php">Panel Administratora</a></li>
+                    <li><a href="admin_users.php">Użytkownicy</a></li>
+                    <li><a href="admin_courses.php">Kursy</a></li>
+                    <li><a href="admin_payments.php">Płatności</a></li>
+                    <li><a href="admin_examinations.php">Badania</a></li>
+                    <li><a href="admin_instructors.php">Instruktorzy</a></li>
+                    <li><a href="admin_finances.php">Finanse</a></li>
+                <?php elseif(isset($_SESSION['rola']) && $_SESSION['rola'] === 'instruktor'): ?>
                     <li><a href="panel_instruktora.php">Panel Instruktora</a></li>
                     <li><a href="harmonogram_jazd.php">Harmonogram Jazd</a></li>
                     <li><a href="moi_kursanci.php">Moi Kursanci</a></li>

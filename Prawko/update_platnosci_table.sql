@@ -10,6 +10,11 @@ CREATE TABLE platnosci (
     data_platnosci TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status ENUM('Oczekujący', 'Opłacony', 'Anulowany') DEFAULT 'Oczekujący',
     opis VARCHAR(255),
+    badanie_id INT NULL,
     FOREIGN KEY (uzytkownik_id) REFERENCES uzytkownicy(id),
-    FOREIGN KEY (kurs_id) REFERENCES kursy(id)
-); 
+    FOREIGN KEY (kurs_id) REFERENCES kursy(id),
+    FOREIGN KEY (badanie_id) REFERENCES badania(id) ON DELETE SET NULL
+);
+
+-- Update existing records to ensure compatibility
+UPDATE platnosci SET badanie_id = NULL WHERE badanie_id IS NOT NULL; 

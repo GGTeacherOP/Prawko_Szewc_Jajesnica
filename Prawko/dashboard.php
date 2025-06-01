@@ -51,6 +51,9 @@ $examination_result = $stmt->get_result();
 $latest_examination = $examination_result->fetch_assoc();
 $stmt->close();
 
+// Debug examination data
+error_log("Latest examination data: " . print_r($latest_examination, true));
+
 // Get user's payments with course details
 $payments_query = "SELECT p.*, k.nazwa as kurs_nazwa, k.kategoria as kurs_kategoria
                   FROM platnosci p 
@@ -213,6 +216,74 @@ if ($latest_examination) {
                 grid-template-columns: 1fr;
             }
         }
+
+        .examination-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: white;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .examination-info {
+            flex: 1;
+        }
+
+        .examination-info h3 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            font-size: 1.2em;
+        }
+
+        .examination-info p {
+            margin: 0.5rem 0;
+            color: #666;
+        }
+
+        .examination-actions {
+            margin-left: 2rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .examination-actions .btn {
+            white-space: nowrap;
+            padding: 0.5rem 1.5rem;
+            font-size: 1rem;
+            background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .examination-actions .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        @media (max-width: 768px) {
+            .examination-card {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .examination-actions {
+                margin-left: 0;
+                margin-top: 1rem;
+            }
+
+            .examination-actions .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -307,16 +378,53 @@ if ($latest_examination) {
 
     <div class="examinations-section">
         <h2 class="section-title">Badania lekarskie</h2>
-        <?php if (!$latest_examination): ?>
+        <?php if ($latest_examination): ?>
             <div class="examination-card">
-                <div>
-                    <p>Badanie dostępne</p>
+                <div class="examination-info">
+                    <h3>Badanie <?php echo htmlspecialchars($latest_examination['typ']); ?></h3>
+                    <p>Data badania: <?php echo date('d.m.Y', strtotime($latest_examination['data_badania'])); ?></p>
+                    <p>Status: 
+                        <?php 
+                        $status_class = '';
+                        $status_text = '';
+                        
+                        if (empty($latest_examination['status'])) {
+                            $status_class = 'pozytywny';
+                            $status_text = 'Opłacone';
+                        } else {
+                            switch($latest_examination['status']) {
+                                case 'Oczekujący':
+                                    $status_class = 'oczekujacy';
+                                    $status_text = 'Oczekujące';
+                                    break;
+                                case 'Pozytywny':
+                                    $status_class = 'pozytywny';
+                                    $status_text = 'Pozytywne';
+                                    break;
+                                case 'Negatywny':
+                                    $status_class = 'negatywny';
+                                    $status_text = 'Negatywne';
+                                    break;
+                                default:
+                                    $status_class = 'pozytywny';
+                                    $status_text = 'Opłacone';
+                            }
+                        }
+                        ?>
+                        <span class="status <?php echo $status_class; ?>">
+                            <?php echo $status_text; ?>
+                        </span>
+                    </p>
                 </div>
-                <a href="umow_badanie.php" class="btn btn-primary">Umów badanie</a>
+                <div class="examination-actions">
+                    <?php if ($status_class === 'oczekujacy'): ?>
+                        <a href="platnosci.php?typ=badanie&badanie_id=<?php echo $latest_examination['id']; ?>" class="btn btn-primary">Opłać badanie</a>
+                    <?php endif; ?>
+                </div>
             </div>
         <?php else: ?>
             <div class="info-card">
-                <p>Brak historii badań lekarskich.</p>
+                <p>Nie masz zaplanowanych badań.</p>
                 <a href="umow_badanie.php" class="btn btn-primary">Umów badanie</a>
             </div>
         <?php endif; ?>
