@@ -13,25 +13,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
         switch ($_POST['action']) {
             case 'add':
-                $data = $_POST['data'];
-                $godzina = $_POST['godzina'];
-                $miejsce = $_POST['miejsce'];
-                $max_osob = $_POST['max_osob'];
+                $data_badania = $_POST['data_badania'];
+                $typ = $_POST['typ'];
+                $wynik = $_POST['wynik'];
+                $status = $_POST['status'];
+                $waznosc_do = $_POST['waznosc_do'];
                 
-                $stmt = $conn->prepare("INSERT INTO badania (data, godzina, miejsce, max_osob) VALUES (?, ?, ?, ?)");
-                $stmt->bind_param("sssi", $data, $godzina, $miejsce, $max_osob);
+                $stmt = $conn->prepare("INSERT INTO badania (data_badania, typ, wynik, status, waznosc_do) VALUES (?, ?, ?, ?, ?)");
+                $stmt->bind_param("sssss", $data_badania, $typ, $wynik, $status, $waznosc_do);
                 $stmt->execute();
                 break;
                 
             case 'edit':
                 $id = $_POST['id'];
-                $data = $_POST['data'];
-                $godzina = $_POST['godzina'];
-                $miejsce = $_POST['miejsce'];
-                $max_osob = $_POST['max_osob'];
+                $data_badania = $_POST['data_badania'];
+                $typ = $_POST['typ'];
+                $wynik = $_POST['wynik'];
+                $status = $_POST['status'];
+                $waznosc_do = $_POST['waznosc_do'];
                 
-                $stmt = $conn->prepare("UPDATE badania SET data = ?, godzina = ?, miejsce = ?, max_osob = ? WHERE id = ?");
-                $stmt->bind_param("sssii", $data, $godzina, $miejsce, $max_osob, $id);
+                $stmt = $conn->prepare("UPDATE badania SET data_badania = ?, typ = ?, wynik = ?, status = ?, waznosc_do = ? WHERE id = ?");
+                $stmt->bind_param("sssssi", $data_badania, $typ, $wynik, $status, $waznosc_do, $id);
                 $stmt->execute();
                 break;
                 
@@ -48,13 +50,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Get all examinations with user information
 $result = $conn->query("
     SELECT b.*, 
-           COALESCE(COUNT(z.id), 0) as zapisane_osoby,
+           COALESCE(COUNT(p.id), 0) as zapisane_osoby,
            GROUP_CONCAT(CONCAT(u.imie, ' ', u.nazwisko) SEPARATOR ', ') as uczestnicy
     FROM badania b
-    LEFT JOIN zapisy_badan z ON b.id = z.badanie_id
-    LEFT JOIN uzytkownicy u ON z.uzytkownik_id = u.id
+    LEFT JOIN platnosci p ON b.id = p.badanie_id
+    LEFT JOIN uzytkownicy u ON p.uzytkownik_id = u.id
     GROUP BY b.id
-    ORDER BY b.data DESC, b.godzina DESC
+    ORDER BY b.data_badania DESC
 ");
 $examinations = $result->fetch_all(MYSQLI_ASSOC);
 ?>
@@ -221,86 +223,130 @@ $examinations = $result->fetch_all(MYSQLI_ASSOC);
             <div class="admin-section">
                 <h2>Lista badań</h2>
                 <ul class="examination-list">
-                    <?php foreach ($examinations as $exam): ?>
+                    <?php if (empty($examinations)): ?>
                         <li class="examination-item">
-                            <div class="examination-info">
-                                <h3>
-                                    Badanie lekarskie
-                                    <span class="<?php echo $exam['zapisane_osoby'] >= $exam['max_osob'] ? 'status-full' : 'status-available'; ?>">
-                                        (<?php echo $exam['zapisane_osoby']; ?>/<?php echo $exam['max_osob']; ?> osób)
-                                    </span>
-                                </h3>
-                                <p>Data: <?php echo date('d.m.Y', strtotime($exam['data'])); ?></p>
-                                <p>Godzina: <?php echo $exam['godzina']; ?></p>
-                                <p>Miejsce: <?php echo htmlspecialchars($exam['miejsce']); ?></p>
-                                <?php if ($exam['uczestnicy']): ?>
-                                    <p>Zapisani: <?php echo htmlspecialchars($exam['uczestnicy']); ?></p>
-                                <?php endif; ?>
-                            </div>
-                            <div class="examination-actions">
-                                <button class="btn-edit" onclick="editExamination(<?php echo htmlspecialchars(json_encode($exam)); ?>)">Edytuj</button>
-                                <form method="POST" style="display: inline;" onsubmit="return confirm('Czy na pewno chcesz usunąć to badanie?');">
-                                    <input type="hidden" name="action" value="delete">
-                                    <input type="hidden" name="id" value="<?php echo $exam['id']; ?>">
-                                    <button type="submit" class="btn-delete">Usuń</button>
-                                </form>
-                            </div>
+                            <p>Brak dostępnych badań.</p>
                         </li>
-                    <?php endforeach; ?>
+                    <?php else: ?>
+                        <?php foreach ($examinations as $exam): ?>
+                            <li class="examination-item">
+                                <div class="examination-info">
+                                    <h3>
+                                        Badanie <?php echo htmlspecialchars($exam['typ']); ?>
+                                        <span class="<?php echo $exam['zapisane_osoby'] >= 10 ? 'status-full' : 'status-available'; ?>">
+                                            (<?php echo $exam['zapisane_osoby']; ?>/10 osób)
+                                        </span>
+                                    </h3>
+                                    <p>Data: <?php echo date('d.m.Y', strtotime($exam['data_badania'])); ?></p>
+                                    <p>Typ: <?php echo htmlspecialchars($exam['typ']); ?></p>
+                                    <p>Wynik: <?php echo htmlspecialchars($exam['wynik']); ?></p>
+                                    <p>Status: <?php echo htmlspecialchars($exam['status']); ?></p>
+                                    <p>Ważność do: <?php echo date('d.m.Y', strtotime($exam['waznosc_do'])); ?></p>
+                                    <?php if ($exam['uczestnicy']): ?>
+                                        <p>Zapisani: <?php echo htmlspecialchars($exam['uczestnicy']); ?></p>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="examination-actions">
+                                    <button class="btn-edit" onclick="editExamination(<?php echo htmlspecialchars(json_encode($exam)); ?>)">Edytuj</button>
+                                    <form method="POST" style="display: inline;" onsubmit="return confirm('Czy na pewno chcesz usunąć to badanie?');">
+                                        <input type="hidden" name="action" value="delete">
+                                        <input type="hidden" name="id" value="<?php echo $exam['id']; ?>">
+                                        <button type="submit" class="btn-delete">Usuń</button>
+                                    </form>
+                                </div>
+                            </li>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </ul>
             </div>
 
             <div class="admin-section">
-                <h2>Dodaj/Edytuj badanie</h2>
-                <form method="POST" id="examinationForm">
-                    <input type="hidden" name="action" value="add" id="formAction">
-                    <input type="hidden" name="id" value="" id="examinationId">
+                <h2>Dodaj nowe badanie</h2>
+                <form method="POST" id="addExaminationForm">
+                    <input type="hidden" name="action" value="add">
                     
                     <div class="form-group">
-                        <label for="data">Data</label>
-                        <input type="date" id="data" name="data" required>
+                        <label for="data_badania">Data badania:</label>
+                        <input type="date" id="data_badania" name="data_badania" required min="<?php echo date('Y-m-d'); ?>">
                     </div>
-                    
+
                     <div class="form-group">
-                        <label for="godzina">Godzina</label>
-                        <input type="time" id="godzina" name="godzina" required>
+                        <label for="typ">Typ badania:</label>
+                        <select id="typ" name="typ" required>
+                            <option value="Podstawowe">Podstawowe</option>
+                            <option value="Rozszerzone">Rozszerzone</option>
+                            <option value="Psychologiczne">Psychologiczne</option>
+                        </select>
                     </div>
-                    
+
                     <div class="form-group">
-                        <label for="miejsce">Miejsce</label>
-                        <input type="text" id="miejsce" name="miejsce" required>
+                        <label for="wynik">Wynik:</label>
+                        <select id="wynik" name="wynik" required>
+                            <option value="Pozytywny">Pozytywny</option>
+                            <option value="Negatywny">Negatywny</option>
+                        </select>
                     </div>
-                    
+
                     <div class="form-group">
-                        <label for="max_osob">Maksymalna liczba osób</label>
-                        <input type="number" id="max_osob" name="max_osob" min="1" required>
+                        <label for="status">Status:</label>
+                        <select id="status" name="status" required>
+                            <option value="Oczekujący">Oczekujący</option>
+                            <option value="Zatwierdzony">Zatwierdzony</option>
+                            <option value="Odrzucony">Odrzucony</option>
+                        </select>
                     </div>
-                    
-                    <button type="submit" class="btn-submit">Zapisz badanie</button>
+
+                    <div class="form-group">
+                        <label for="waznosc_do">Ważność do:</label>
+                        <input type="date" id="waznosc_do" name="waznosc_do" required>
+                    </div>
+
+                    <button type="submit" class="btn-submit">Dodaj badanie</button>
                 </form>
             </div>
         </div>
     </div>
 
     <script>
-        function editExamination(exam) {
-            document.getElementById('formAction').value = 'edit';
-            document.getElementById('examinationId').value = exam.id;
-            document.getElementById('data').value = exam.data;
-            document.getElementById('godzina').value = exam.godzina;
-            document.getElementById('miejsce').value = exam.miejsce;
-            document.getElementById('max_osob').value = exam.max_osob;
-            
-            // Scroll to form
-            document.querySelector('.admin-section:last-child').scrollIntoView({ behavior: 'smooth' });
+    function editExamination(exam) {
+        // Wypełnij formularz danymi do edycji
+        document.getElementById('data_badania').value = exam.data_badania;
+        document.getElementById('typ').value = exam.typ;
+        document.getElementById('wynik').value = exam.wynik;
+        document.getElementById('status').value = exam.status;
+        document.getElementById('waznosc_do').value = exam.waznosc_do;
+        
+        // Zmień akcję formularza na edycję
+        const form = document.getElementById('addExaminationForm');
+        form.querySelector('input[name="action"]').value = 'edit';
+        
+        // Dodaj ukryte pole z ID
+        let idInput = form.querySelector('input[name="id"]');
+        if (!idInput) {
+            idInput = document.createElement('input');
+            idInput.type = 'hidden';
+            idInput.name = 'id';
+            form.appendChild(idInput);
         }
+        idInput.value = exam.id;
+        
+        // Zmień tekst przycisku
+        form.querySelector('.btn-submit').textContent = 'Zapisz zmiany';
+        
+        // Przewiń do formularza
+        form.scrollIntoView({ behavior: 'smooth' });
+    }
 
-        // Reset form when clicking "Add new" button
-        document.querySelector('.btn-submit').addEventListener('click', function(e) {
-            if (document.getElementById('formAction').value === 'add') {
-                document.getElementById('examinationForm').reset();
-            }
-        });
+    // Reset formularza po dodaniu/edycji
+    document.getElementById('addExaminationForm').addEventListener('submit', function() {
+        setTimeout(() => {
+            this.reset();
+            this.querySelector('input[name="action"]').value = 'add';
+            this.querySelector('.btn-submit').textContent = 'Dodaj badanie';
+            const idInput = this.querySelector('input[name="id"]');
+            if (idInput) idInput.remove();
+        }, 1000);
+    });
     </script>
 </body>
 </html> 

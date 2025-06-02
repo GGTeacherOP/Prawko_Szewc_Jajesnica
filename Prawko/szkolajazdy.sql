@@ -187,7 +187,13 @@ INSERT INTO kursy (nazwa, kategoria, opis, cena) VALUES
 ('Kurs na prawo jazdy kat. A', 'Prawo Jazdy', 'Kurs na motocykl', 2000.00),
 ('Kurs na prawo jazdy kat. C', 'Kierowcy Zawodowi', 'Kurs dla kierowców zawodowych', 3500.00),
 ('Kurs na prawo jazdy kat. D', 'Kierowcy Zawodowi', 'Kurs dla kierowców autobusów', 4000.00),
-('Kurs instruktorski', 'Instruktorzy', 'Kurs dla przyszłych instruktorów', 5000.00);
+('Kurs instruktorski', 'Instruktorzy', 'Kurs dla przyszłych instruktorów', 5000.00),
+('Kurs Kierowcy Zawodowego', 'Kierowcy Zawodowi', 'Kompleksowy kurs dla kierowców zawodowych', 3000.00),
+('Kwalifikacja Okresowa', 'Kierowcy Zawodowi', 'Kwalifikacja okresowa dla kierowców zawodowych', 1500.00),
+('Kurs ADR', 'Kierowcy Zawodowi', 'Kurs przewozu materiałów niebezpiecznych', 2000.00),
+('Kurs Tachografu', 'Kierowcy Zawodowi', 'Kurs obsługi tachografu cyfrowego', 800.00),
+('Kurs Przewozu Osób', 'Kierowcy Zawodowi', 'Kurs przewozu osób', 1200.00),
+('Kurs Przewozu Rzeczy', 'Kierowcy Zawodowi', 'Kurs przewozu rzeczy', 1000.00);
 
 -- Wstawianie przykładowych pojazdów
 INSERT INTO pojazdy (marka, model, rok_produkcji, kategoria_prawa_jazdy, stan_techniczny) VALUES

@@ -11,53 +11,113 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['rola']) || $_SESSION['rola
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
-        switch ($_POST['action']) {
-            case 'add':
-                $imie = $_POST['imie'];
-                $nazwisko = $_POST['nazwisko'];
-                $email = $_POST['email'];
-                $telefon = $_POST['telefon'];
-                $kategorie = $_POST['kategorie'];
-                
-                $stmt = $conn->prepare("INSERT INTO instruktorzy (imie, nazwisko, email, telefon, kategorie) VALUES (?, ?, ?, ?, ?)");
-                $stmt->bind_param("sssss", $imie, $nazwisko, $email, $telefon, $kategorie);
-                $stmt->execute();
-                break;
-                
-            case 'edit':
-                $id = $_POST['id'];
-                $imie = $_POST['imie'];
-                $nazwisko = $_POST['nazwisko'];
-                $email = $_POST['email'];
-                $telefon = $_POST['telefon'];
-                $kategorie = $_POST['kategorie'];
-                
-                $stmt = $conn->prepare("UPDATE instruktorzy SET imie = ?, nazwisko = ?, email = ?, telefon = ?, kategorie = ? WHERE id = ?");
-                $stmt->bind_param("sssssi", $imie, $nazwisko, $email, $telefon, $kategorie, $id);
-                $stmt->execute();
-                break;
-                
-            case 'delete':
-                $id = $_POST['id'];
-                $stmt = $conn->prepare("DELETE FROM instruktorzy WHERE id = ?");
-                $stmt->bind_param("i", $id);
-                $stmt->execute();
-                break;
+        $errors = [];
+        
+        // Validate required fields
+        if (empty($_POST['imie'])) {
+            $errors[] = "Imię jest wymagane.";
+        }
+        if (empty($_POST['nazwisko'])) {
+            $errors[] = "Nazwisko jest wymagane.";
+        }
+        if (empty($_POST['email']) || !filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
+            $errors[] = "Podaj prawidłowy adres email.";
+        }
+        if (empty($_POST['telefon'])) {
+            $errors[] = "Telefon jest wymagany.";
+        }
+        if (empty($_POST['haslo'])) {
+            $errors[] = "Hasło jest wymagane.";
+        }
+        if (empty($_POST['kategorie_uprawnien'])) {
+            $errors[] = "Wybierz przynajmniej jedną kategorię.";
+        }
+        
+        if (empty($errors)) {
+            switch ($_POST['action']) {
+                case 'add':
+                    $imie = trim($_POST['imie']);
+                    $nazwisko = trim($_POST['nazwisko']);
+                    $email = trim($_POST['email']);
+                    $telefon = trim($_POST['telefon']);
+                    $haslo = password_hash($_POST['haslo'], PASSWORD_DEFAULT);
+                    $kategorie_uprawnien = implode(',', $_POST['kategorie_uprawnien']);
+                    
+                    try {
+                        // Check if email already exists
+                        $check_stmt = $conn->prepare("SELECT id FROM pracownicy WHERE email = ?");
+                        $check_stmt->bind_param("s", $email);
+                        $check_stmt->execute();
+                        $check_result = $check_stmt->get_result();
+                        
+                        if ($check_result->num_rows > 0) {
+                            $errors[] = "Ten email jest już zajęty.";
+                        } else {
+                            // Insert into pracownicy
+                            $stmt = $conn->prepare("INSERT INTO pracownicy (imie, nazwisko, email, telefon, haslo, kategorie_uprawnien, rola) VALUES (?, ?, ?, ?, ?, ?, 'instruktor')");
+                            $stmt->bind_param("ssssss", $imie, $nazwisko, $email, $telefon, $haslo, $kategorie_uprawnien);
+                            $stmt->execute();
+                            
+                            header("Location: admin_instructors.php?success=1");
+                            exit();
+                        }
+                    } catch (Exception $e) {
+                        $errors[] = "Wystąpił błąd podczas dodawania instruktora: " . $e->getMessage();
+                    }
+                    break;
+                    
+                case 'edit':
+                    $id = $_POST['id'];
+                    $imie = trim($_POST['imie']);
+                    $nazwisko = trim($_POST['nazwisko']);
+                    $email = trim($_POST['email']);
+                    $telefon = trim($_POST['telefon']);
+                    $kategorie_uprawnien = implode(',', $_POST['kategorie_uprawnien']);
+                    
+                    try {
+                        // Update pracownicy
+                        $stmt = $conn->prepare("UPDATE pracownicy SET imie = ?, nazwisko = ?, email = ?, telefon = ?, kategorie_uprawnien = ? WHERE id = ?");
+                        $stmt->bind_param("sssssi", $imie, $nazwisko, $email, $telefon, $kategorie_uprawnien, $id);
+                        $stmt->execute();
+                        
+                        header("Location: admin_instructors.php?success=2");
+                        exit();
+                    } catch (Exception $e) {
+                        $errors[] = "Wystąpił błąd podczas aktualizacji instruktora: " . $e->getMessage();
+                    }
+                    break;
+                    
+                case 'delete':
+                    $id = $_POST['id'];
+                    try {
+                        // Delete from pracownicy
+                        $stmt = $conn->prepare("DELETE FROM pracownicy WHERE id = ?");
+                        $stmt->bind_param("i", $id);
+                        $stmt->execute();
+                        
+                        header("Location: admin_instructors.php?success=3");
+                        exit();
+                    } catch (Exception $e) {
+                        $errors[] = "Wystąpił błąd podczas usuwania instruktora: " . $e->getMessage();
+                    }
+                    break;
+            }
         }
     }
 }
 
 // Get all instructors with their course information
 $result = $conn->query("
-    SELECT i.*, 
+    SELECT p.*, 
            COUNT(DISTINCT j.id) as liczba_jazd,
            COUNT(DISTINCT k.id) as liczba_kursantow
-    FROM instruktorzy i
-    LEFT JOIN jazdy j ON i.id = j.instruktor_id
+    FROM pracownicy p
+    LEFT JOIN jazdy j ON p.id = j.instruktor_id
     LEFT JOIN zapisy z ON j.kursant_id = z.uzytkownik_id
     LEFT JOIN kursy k ON z.kurs_id = k.id
-    GROUP BY i.id
-    ORDER BY i.nazwisko, i.imie
+    WHERE p.rola = 'instruktor'
+    GROUP BY p.id
+    ORDER BY p.nazwisko, p.imie
 ");
 $instructors = $result->fetch_all(MYSQLI_ASSOC);
 ?>
@@ -212,6 +272,42 @@ $instructors = $result->fetch_all(MYSQLI_ASSOC);
                 grid-template-columns: 1fr;
             }
         }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .alert {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
     </style>
 </head>
 <body>
@@ -223,37 +319,67 @@ $instructors = $result->fetch_all(MYSQLI_ASSOC);
             <a href="admin_panel.php" class="btn">Powrót do panelu</a>
         </div>
 
+        <?php if (!empty($errors)): ?>
+            <div class="alert alert-danger">
+                <?php foreach ($errors as $error): ?>
+                    <p><?php echo htmlspecialchars($error); ?></p>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($_GET['success'])): ?>
+            <div class="alert alert-success">
+                <?php
+                switch ($_GET['success']) {
+                    case 1:
+                        echo "Instruktor został pomyślnie dodany.";
+                        break;
+                    case 2:
+                        echo "Instruktor został pomyślnie zaktualizowany.";
+                        break;
+                    case 3:
+                        echo "Instruktor został pomyślnie usunięty.";
+                        break;
+                }
+                ?>
+            </div>
+        <?php endif; ?>
+
         <div class="admin-grid">
             <div class="admin-section">
                 <h2>Lista instruktorów</h2>
-                <ul class="instructor-list">
-                    <?php foreach ($instructors as $instructor): ?>
-                        <li class="instructor-item">
-                            <div class="instructor-info">
-                                <h3><?php echo htmlspecialchars($instructor['imie'] . ' ' . $instructor['nazwisko']); ?></h3>
-                                <p>Email: <?php echo htmlspecialchars($instructor['email']); ?></p>
-                                <p>Telefon: <?php echo htmlspecialchars($instructor['telefon']); ?></p>
-                                <p>Kategorie: <?php echo htmlspecialchars($instructor['kategorie']); ?></p>
-                                <div class="stats">
-                                    <div class="stat">
-                                        Jazdy: <?php echo $instructor['liczba_jazd']; ?>
-                                    </div>
-                                    <div class="stat">
-                                        Kursanci: <?php echo $instructor['liczba_kursantow']; ?>
+                <?php if (empty($instructors)): ?>
+                    <p>Brak dostępnych instruktorów.</p>
+                <?php else: ?>
+                    <ul class="instructor-list">
+                        <?php foreach ($instructors as $instructor): ?>
+                            <li class="instructor-item">
+                                <div class="instructor-info">
+                                    <h3><?php echo htmlspecialchars($instructor['imie'] . ' ' . $instructor['nazwisko']); ?></h3>
+                                    <p>Email: <?php echo htmlspecialchars($instructor['email']); ?></p>
+                                    <p>Telefon: <?php echo htmlspecialchars($instructor['telefon']); ?></p>
+                                    <p>Kategorie: <?php echo htmlspecialchars($instructor['kategorie_uprawnien']); ?></p>
+                                    <div class="stats">
+                                        <div class="stat">
+                                            Jazdy: <?php echo $instructor['liczba_jazd']; ?>
+                                        </div>
+                                        <div class="stat">
+                                            Kursanci: <?php echo $instructor['liczba_kursantow']; ?>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="instructor-actions">
-                                <button class="btn-edit" onclick="editInstructor(<?php echo htmlspecialchars(json_encode($instructor)); ?>)">Edytuj</button>
-                                <form method="POST" style="display: inline;" onsubmit="return confirm('Czy na pewno chcesz usunąć tego instruktora?');">
-                                    <input type="hidden" name="action" value="delete">
-                                    <input type="hidden" name="id" value="<?php echo $instructor['id']; ?>">
-                                    <button type="submit" class="btn-delete">Usuń</button>
-                                </form>
-                            </div>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
+                                <div class="instructor-actions">
+                                    <button class="btn-edit" onclick="editInstructor(<?php echo htmlspecialchars(json_encode($instructor)); ?>)">Edytuj</button>
+                                    <form method="POST" style="display: inline;" onsubmit="return confirm('Czy na pewno chcesz usunąć tego instruktora?');">
+                                        <input type="hidden" name="action" value="delete">
+                                        <input type="hidden" name="id" value="<?php echo $instructor['id']; ?>">
+                                        <button type="submit" class="btn-delete">Usuń</button>
+                                    </form>
+                                </div>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
             </div>
 
             <div class="admin-section">
@@ -283,16 +409,32 @@ $instructors = $result->fetch_all(MYSQLI_ASSOC);
                     </div>
                     
                     <div class="form-group">
-                        <label for="kategorie">Kategorie</label>
-                        <select id="kategorie" name="kategorie" multiple required>
-                            <option value="A">Kategoria A</option>
-                            <option value="B">Kategoria B</option>
-                            <option value="C">Kategoria C</option>
-                            <option value="D">Kategoria D</option>
-                        </select>
+                        <label for="haslo">Hasło</label>
+                        <input type="password" id="haslo" name="haslo" required>
                     </div>
                     
-                    <button type="submit" class="btn-submit">Zapisz instruktora</button>
+                    <div class="form-group">
+                        <label>Kategorie</label>
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" name="kategorie_uprawnien[]" value="A"> Kategoria A - Motocykle
+                            </label>
+                            <label>
+                                <input type="checkbox" name="kategorie_uprawnien[]" value="B"> Kategoria B - Samochody osobowe
+                            </label>
+                            <label>
+                                <input type="checkbox" name="kategorie_uprawnien[]" value="C"> Kategoria C - Samochody ciężarowe
+                            </label>
+                            <label>
+                                <input type="checkbox" name="kategorie_uprawnien[]" value="D"> Kategoria D - Autobusy
+                            </label>
+                            <label>
+                                <input type="checkbox" name="kategorie_uprawnien[]" value="inne"> Inne
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-submit" id="submitBtn">Dodaj instruktora</button>
                 </form>
             </div>
         </div>
@@ -307,22 +449,40 @@ $instructors = $result->fetch_all(MYSQLI_ASSOC);
             document.getElementById('email').value = instructor.email;
             document.getElementById('telefon').value = instructor.telefon;
             
-            // Handle multiple select
-            const kategorie = instructor.kategorie.split(',');
-            const select = document.getElementById('kategorie');
-            Array.from(select.options).forEach(option => {
-                option.selected = kategorie.includes(option.value);
+            // Clear all checkboxes
+            document.querySelectorAll('input[name="kategorie_uprawnien[]"]').forEach(checkbox => {
+                checkbox.checked = false;
             });
             
+            // Check appropriate categories
+            const categories = instructor.kategorie_uprawnien.split(',');
+            categories.forEach(category => {
+                const checkbox = document.querySelector(`input[name="kategorie_uprawnien[]"][value="${category}"]`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                }
+            });
+            
+            // Hide login and password fields when editing
+            document.getElementById('haslo').parentElement.style.display = 'none';
+            
+            document.getElementById('submitBtn').textContent = 'Zapisz zmiany';
+            
             // Scroll to form
-            document.querySelector('.admin-section:last-child').scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('instructorForm').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Reset form when clicking "Add new" button
-        document.querySelector('.btn-submit').addEventListener('click', function(e) {
-            if (document.getElementById('formAction').value === 'add') {
+        // Reset form after submission
+        document.getElementById('instructorForm').addEventListener('submit', function() {
+            setTimeout(function() {
+                document.getElementById('formAction').value = 'add';
+                document.getElementById('instructorId').value = '';
                 document.getElementById('instructorForm').reset();
-            }
+                document.getElementById('submitBtn').textContent = 'Dodaj instruktora';
+                
+                // Show login and password fields
+                document.getElementById('haslo').parentElement.style.display = 'block';
+            }, 100);
         });
     </script>
 </body>

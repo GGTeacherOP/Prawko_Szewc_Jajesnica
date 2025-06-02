@@ -198,49 +198,51 @@ session_start();
                     require_once 'course_enrollment_button.php';
                     displayEnrollmentButton('Operatorzy Maszyn', $conn, 'Kurs Operatora Koparki');
                     ?>
-                    <div class="pricing-features">
-                        <ul>
-                            <li>40 godzin teorii</li>
-                            <li>60 godzin praktyki</li>
-                            <li>Materiały szkoleniowe</li>
-                            <li>Egzamin UDT</li>
-                            <li>Certyfikat operatora</li>
-                        </ul>
-                    </div>
                 </div>
+
                 <div class="pricing-table" data-aos="fade-up" data-aos-delay="200">
                     <div class="pricing-header">
-                        <h3>Kurs Rozszerzony</h3>
+                        <h3>Kurs Ładowarki</h3>
                     </div>
                     <?php
-                    displayEnrollmentButton('Operatorzy Maszyn', $conn, 'Kurs Operatora - Rozszerzony');
+                    displayEnrollmentButton('Operatorzy Maszyn', $conn, 'Kurs Operatora Ładowarki');
                     ?>
-                    <div class="pricing-features">
-                        <ul>
-                            <li>Dwie specjalności</li>
-                            <li>80 godzin szkolenia</li>
-                            <li>Materiały szkoleniowe</li>
-                            <li>Zajęcia praktyczne</li>
-                            <li>Egzaminy UDT</li>
-                        </ul>
-                    </div>
                 </div>
+
                 <div class="pricing-table" data-aos="fade-up" data-aos-delay="300">
                     <div class="pricing-header">
-                        <h3>Kurs HDS</h3>
+                        <h3>Kurs Wózka Widłowego</h3>
                     </div>
                     <?php
-                    displayEnrollmentButton('Operatorzy Maszyn', $conn, 'Kurs Operatora HDS');
+                    displayEnrollmentButton('Operatorzy Maszyn', $conn, 'Kurs Operatora Wózka Widłowego');
                     ?>
-                    <div class="pricing-features">
-                        <ul>
-                            <li>Obsługa dźwigów</li>
-                            <li>Załadunek i rozładunek</li>
-                            <li>BHP przy pracach</li>
-                            <li>Uprawnienia UDT</li>
-                            <li>Certyfikat operatora</li>
-                        </ul>
+                </div>
+
+                <div class="pricing-table" data-aos="fade-up" data-aos-delay="400">
+                    <div class="pricing-header">
+                        <h3>Kurs Suwnicy</h3>
                     </div>
+                    <?php
+                    displayEnrollmentButton('Operatorzy Maszyn', $conn, 'Kurs Operatora Suwnicy');
+                    ?>
+                </div>
+
+                <div class="pricing-table" data-aos="fade-up" data-aos-delay="500">
+                    <div class="pricing-header">
+                        <h3>Kurs Podnośnika</h3>
+                    </div>
+                    <?php
+                    displayEnrollmentButton('Operatorzy Maszyn', $conn, 'Kurs Operatora Podnośnika');
+                    ?>
+                </div>
+
+                <div class="pricing-table" data-aos="fade-up" data-aos-delay="600">
+                    <div class="pricing-header">
+                        <h3>Kurs Maszyn Drogowych</h3>
+                    </div>
+                    <?php
+                    displayEnrollmentButton('Operatorzy Maszyn', $conn, 'Kurs Operatora Maszyn Drogowych');
+                    ?>
                 </div>
             </div>
 

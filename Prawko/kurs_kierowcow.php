@@ -36,16 +36,11 @@ session_start();
                 <p>Oferujemy kompleksowe szkolenia dla kierowców zawodowych, spełniające wszystkie wymogi prawne i standardy branżowe.</p>
             </div>
 
-            <div class="course-list-container">
-                <!-- Kwalifikacja Wstępna -->
-                <div class="info-box" data-aos="fade-up">
-                    <h3>Kurs Kierowcy Zawodowego</h3>
-                    <ul class="benefits-list">
-                        <li>280 godzin zajęć teoretycznych</li>
-                        <li>20 godzin zajęć praktycznych</li>
-                        <li>Egzamin państwowy</li>
-                        <li>Materiały szkoleniowe</li>
-                    </ul>
+            <div class="pricing-tables">
+                <div class="pricing-table" data-aos="fade-up" data-aos-delay="100">
+                    <div class="pricing-header">
+                        <h3>Kurs Kierowcy Zawodowego</h3>
+                    </div>
                     <?php
                     require_once 'config.php';
                     require_once 'course_enrollment_button.php';
@@ -53,32 +48,48 @@ session_start();
                     ?>
                 </div>
 
-                <!-- Kwalifikacja Okresowa -->
-                <div class="info-box" data-aos="fade-up" data-aos-delay="100">
-                    <h3>Kwalifikacja Okresowa</h3>
-                    <ul class="benefits-list">
-                        <li>35 godzin zajęć</li>
-                        <li>Aktualizacja wiedzy</li>
-                        <li>Certyfikat ukończenia</li>
-                        <li>Materiały szkoleniowe</li>
-                    </ul>
+                <div class="pricing-table" data-aos="fade-up" data-aos-delay="200">
+                    <div class="pricing-header">
+                        <h3>Kwalifikacja Okresowa</h3>
+                    </div>
                     <?php
                     displayEnrollmentButton('Kierowcy Zawodowi', $conn, 'Kwalifikacja Okresowa');
                     ?>
                 </div>
 
-                <!-- Kurs ADR -->
-                <div class="info-box" data-aos="fade-up" data-aos-delay="200">
-                    <h3>Kurs ADR</h3>
-                    <ul class="benefits-list">
-                        <li>Przewóz materiałów niebezpiecznych</li>
-                        <li>24 godziny zajęć</li>
-                        <li>Praktyczne ćwiczenia</li>
-                        <li>Egzamin ADR</li>
-                        <li>Certyfikat międzynarodowy</li>
-                    </ul>
+                <div class="pricing-table" data-aos="fade-up" data-aos-delay="300">
+                    <div class="pricing-header">
+                        <h3>Kurs ADR</h3>
+                    </div>
                     <?php
                     displayEnrollmentButton('Kierowcy Zawodowi', $conn, 'Kurs ADR');
+                    ?>
+                </div>
+
+                <div class="pricing-table" data-aos="fade-up" data-aos-delay="400">
+                    <div class="pricing-header">
+                        <h3>Kurs Tachografu</h3>
+                    </div>
+                    <?php
+                    displayEnrollmentButton('Kierowcy Zawodowi', $conn, 'Kurs Tachografu');
+                    ?>
+                </div>
+
+                <div class="pricing-table" data-aos="fade-up" data-aos-delay="500">
+                    <div class="pricing-header">
+                        <h3>Kurs Przewozu Osób</h3>
+                    </div>
+                    <?php
+                    displayEnrollmentButton('Kierowcy Zawodowi', $conn, 'Kurs Przewozu Osób');
+                    ?>
+                </div>
+
+                <div class="pricing-table" data-aos="fade-up" data-aos-delay="600">
+                    <div class="pricing-header">
+                        <h3>Kurs Przewozu Rzeczy</h3>
+                    </div>
+                    <?php
+                    displayEnrollmentButton('Kierowcy Zawodowi', $conn, 'Kurs Przewozu Rzeczy');
                     ?>
                 </div>
             </div>

@@ -1,26 +1,32 @@
 <?php
 require_once 'config.php';
 
-// Get all courses
-$query = "SELECT * FROM kursy";
-$result = $conn->query($query);
-
-echo "<h2>Dostępne kursy:</h2>";
-if ($result->num_rows > 0) {
-    echo "<table border='1'>";
-    echo "<tr><th>ID</th><th>Nazwa</th><th>Kategoria</th><th>Cena</th></tr>";
-    while($row = $result->fetch_assoc()) {
-        echo "<tr>";
-        echo "<td>" . $row['id'] . "</td>";
-        echo "<td>" . $row['nazwa'] . "</td>";
-        echo "<td>" . $row['kategoria'] . "</td>";
-        echo "<td>" . $row['cena'] . "</td>";
-        echo "</tr>";
-    }
-    echo "</table>";
-} else {
-    echo "Brak kursów w bazie danych.";
+// Check if the database connection is working
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
 }
+
+// Query to get all courses
+$sql = "SELECT * FROM kursy WHERE kategoria = 'Kierowcy Zawodowi'";
+$result = $conn->query($sql);
+
+echo "<h2>Courses in database:</h2>";
+echo "<pre>";
+
+if ($result->num_rows > 0) {
+    while($row = $result->fetch_assoc()) {
+        echo "ID: " . $row["id"] . "\n";
+        echo "Name: " . $row["nazwa"] . "\n";
+        echo "Category: " . $row["kategoria"] . "\n";
+        echo "Price: " . $row["cena"] . "\n";
+        echo "Description: " . $row["opis"] . "\n";
+        echo "-------------------\n";
+    }
+} else {
+    echo "No courses found";
+}
+
+echo "</pre>";
 
 $conn->close();
 ?> 

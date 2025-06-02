@@ -14,7 +14,7 @@ error_log("Instructor panel accessed by: " . print_r($_SESSION, true));
 
 // Get instructor details
 $instructor_id = $_SESSION['user_id'];
-$get_instructor_query = "SELECT * FROM instruktorzy WHERE id = ?";
+$get_instructor_query = "SELECT * FROM pracownicy WHERE id = ? AND rola = 'instruktor'";
 $stmt = $conn->prepare($get_instructor_query);
 $stmt->bind_param("i", $instructor_id);
 $stmt->execute();
@@ -25,13 +25,11 @@ $stmt->close();
 // Pobierz zaplanowane jazdy dla instruktora
 $stmt = $conn->prepare("
     SELECT j.*, 
-           u.imie as kursant_imie, u.nazwisko as kursant_nazwisko,
-           p.marka, p.model
+           u.imie as kursant_imie, u.nazwisko as kursant_nazwisko
     FROM jazdy j
-    JOIN uzytkownicy u ON j.uzytkownik_id = u.id
-    JOIN pojazdy p ON j.pojazd_id = p.id
+    JOIN uzytkownicy u ON j.kursant_id = u.id
     WHERE j.instruktor_id = ? AND j.status = 'Zaplanowana'
-    ORDER BY j.data_jazdy, j.godzina_rozpoczecia
+    ORDER BY j.data_jazdy
 ");
 $stmt->bind_param("i", $instructor_id);
 $stmt->execute();
@@ -96,7 +94,7 @@ $jazdy = $stmt->get_result();
     <main>
         <div class="instructor-container">
             <div class="welcome-section">
-                <h1>Witaj, <?php echo htmlspecialchars($_SESSION['imie'] . ' ' . $_SESSION['nazwisko']); ?>!</h1>
+                <h1>Witaj, <?php echo htmlspecialchars($instructor['imie'] . ' ' . $instructor['nazwisko']); ?>!</h1>
                 <p>Panel instruktora - zarządzaj swoimi kursami i kursantami</p>
             </div>
 
@@ -130,11 +128,9 @@ $jazdy = $stmt->get_result();
             <?php if($jazdy->num_rows > 0): ?>
                 <?php while($jazda = $jazdy->fetch_assoc()): ?>
                     <div class="lesson-card">
-                        <h3>Jazda <?php echo date('d.m.Y', strtotime($jazda['data_jazdy'])); ?></h3>
+                        <h3>Jazda <?php echo date('d.m.Y H:i', strtotime($jazda['data_jazdy'])); ?></h3>
                         <p><strong>Kursant:</strong> <?php echo htmlspecialchars($jazda['kursant_imie'] . ' ' . $jazda['kursant_nazwisko']); ?></p>
-                        <p><strong>Godzina:</strong> <?php echo date('H:i', strtotime($jazda['godzina_rozpoczecia'])); ?></p>
-                        <p><strong>Czas trwania:</strong> <?php echo $jazda['liczba_godzin']; ?> godz.</p>
-                        <p><strong>Pojazd:</strong> <?php echo htmlspecialchars($jazda['marka'] . ' ' . $jazda['model']); ?></p>
+                        <p><strong>Data i godzina:</strong> <?php echo date('d.m.Y H:i', strtotime($jazda['data_jazdy'])); ?></p>
                         
                         <div class="lesson-actions">
                             <form method="POST" action="anuluj_jazde_instruktor.php">
@@ -148,22 +144,9 @@ $jazdy = $stmt->get_result();
                             <form method="POST" action="przesun_jazde.php">
                                 <input type="hidden" name="jazda_id" value="<?php echo $jazda['id']; ?>">
                                 <div class="form-group">
-                                    <label for="nowa_data_<?php echo $jazda['id']; ?>">Nowa data:</label>
-                                    <input type="date" id="nowa_data_<?php echo $jazda['id']; ?>" name="nowa_data" 
-                                           required min="<?php echo date('Y-m-d'); ?>">
-                                </div>
-                                <div class="form-group">
-                                    <label for="nowa_godzina_<?php echo $jazda['id']; ?>">Nowa godzina:</label>
-                                    <select id="nowa_godzina_<?php echo $jazda['id']; ?>" name="nowa_godzina" required>
-                                        <?php
-                                        for ($h = 8; $h <= 18; $h++) {
-                                            for ($m = 0; $m < 60; $m += 30) {
-                                                $time = sprintf("%02d:%02d", $h, $m);
-                                                echo "<option value=\"$time\">$time</option>";
-                                            }
-                                        }
-                                        ?>
-                                    </select>
+                                    <label for="nowa_data_<?php echo $jazda['id']; ?>">Nowa data i godzina:</label>
+                                    <input type="datetime-local" id="nowa_data_<?php echo $jazda['id']; ?>" name="nowa_data" 
+                                           required min="<?php echo date('Y-m-d\TH:i'); ?>">
                                 </div>
                                 <button type="submit" class="btn primary">Zatwierdź zmianę</button>
                             </form>

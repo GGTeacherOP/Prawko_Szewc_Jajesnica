@@ -11,36 +11,72 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['rola']) || $_SESSION['rola
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
-        switch ($_POST['action']) {
-            case 'add':
-                $nazwa = $_POST['nazwa'];
-                $cena = $_POST['cena'];
-                $opis = $_POST['opis'];
-                $kategoria = $_POST['kategoria'];
-                
-                $stmt = $conn->prepare("INSERT INTO kursy (nazwa, cena, opis, kategoria) VALUES (?, ?, ?, ?)");
-                $stmt->bind_param("sdss", $nazwa, $cena, $opis, $kategoria);
-                $stmt->execute();
-                break;
-                
-            case 'edit':
-                $id = $_POST['id'];
-                $nazwa = $_POST['nazwa'];
-                $cena = $_POST['cena'];
-                $opis = $_POST['opis'];
-                $kategoria = $_POST['kategoria'];
-                
-                $stmt = $conn->prepare("UPDATE kursy SET nazwa = ?, cena = ?, opis = ?, kategoria = ? WHERE id = ?");
-                $stmt->bind_param("sdssi", $nazwa, $cena, $opis, $kategoria, $id);
-                $stmt->execute();
-                break;
-                
-            case 'delete':
-                $id = $_POST['id'];
-                $stmt = $conn->prepare("DELETE FROM kursy WHERE id = ?");
-                $stmt->bind_param("i", $id);
-                $stmt->execute();
-                break;
+        $errors = [];
+        
+        // Validate required fields
+        if (empty($_POST['nazwa'])) {
+            $errors[] = "Nazwa kursu jest wymagana.";
+        }
+        if (empty($_POST['cena']) || !is_numeric($_POST['cena']) || $_POST['cena'] <= 0) {
+            $errors[] = "Cena musi być liczbą dodatnią.";
+        }
+        if (empty($_POST['kategoria'])) {
+            $errors[] = "Kategoria jest wymagana.";
+        }
+        
+        if (empty($errors)) {
+            switch ($_POST['action']) {
+                case 'add':
+                    $nazwa = trim($_POST['nazwa']);
+                    $cena = floatval($_POST['cena']);
+                    $opis = trim($_POST['opis']);
+                    $kategoria = $_POST['kategoria'];
+                    
+                    try {
+                        $stmt = $conn->prepare("INSERT INTO kursy (nazwa, cena, opis, kategoria) VALUES (?, ?, ?, ?)");
+                        $stmt->bind_param("sdss", $nazwa, $cena, $opis, $kategoria);
+                        $stmt->execute();
+                        
+                        header("Location: admin_courses.php?success=1");
+                        exit();
+                    } catch (Exception $e) {
+                        $errors[] = "Wystąpił błąd podczas dodawania kursu: " . $e->getMessage();
+                    }
+                    break;
+                    
+                case 'edit':
+                    $id = $_POST['id'];
+                    $nazwa = trim($_POST['nazwa']);
+                    $cena = floatval($_POST['cena']);
+                    $opis = trim($_POST['opis']);
+                    $kategoria = $_POST['kategoria'];
+                    
+                    try {
+                        $stmt = $conn->prepare("UPDATE kursy SET nazwa = ?, cena = ?, opis = ?, kategoria = ? WHERE id = ?");
+                        $stmt->bind_param("sdssi", $nazwa, $cena, $opis, $kategoria, $id);
+                        $stmt->execute();
+                        
+                        header("Location: admin_courses.php?success=2");
+                        exit();
+                    } catch (Exception $e) {
+                        $errors[] = "Wystąpił błąd podczas aktualizacji kursu: " . $e->getMessage();
+                    }
+                    break;
+                    
+                case 'delete':
+                    $id = $_POST['id'];
+                    try {
+                        $stmt = $conn->prepare("DELETE FROM kursy WHERE id = ?");
+                        $stmt->bind_param("i", $id);
+                        $stmt->execute();
+                        
+                        header("Location: admin_courses.php?success=3");
+                        exit();
+                    } catch (Exception $e) {
+                        $errors[] = "Wystąpił błąd podczas usuwania kursu: " . $e->getMessage();
+                    }
+                    break;
+            }
         }
     }
 }
@@ -203,28 +239,61 @@ $courses = $result->fetch_all(MYSQLI_ASSOC);
             <a href="admin_panel.php" class="btn">Powrót do panelu</a>
         </div>
 
+        <?php if (!empty($errors)): ?>
+            <div class="alert alert-danger">
+                <?php foreach ($errors as $error): ?>
+                    <p><?php echo htmlspecialchars($error); ?></p>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($_GET['success'])): ?>
+            <div class="alert alert-success">
+                <?php
+                switch ($_GET['success']) {
+                    case 1:
+                        echo "Kurs został pomyślnie dodany.";
+                        break;
+                    case 2:
+                        echo "Kurs został pomyślnie zaktualizowany.";
+                        break;
+                    case 3:
+                        echo "Kurs został pomyślnie usunięty.";
+                        break;
+                }
+                ?>
+            </div>
+        <?php endif; ?>
+
         <div class="admin-grid">
             <div class="admin-section">
                 <h2>Lista kursów</h2>
-                <ul class="course-list">
-                    <?php foreach ($courses as $course): ?>
-                        <li class="course-item">
-                            <div class="course-info">
-                                <h3><?php echo htmlspecialchars($course['nazwa']); ?></h3>
-                                <p>Kategoria: <?php echo htmlspecialchars($course['kategoria']); ?></p>
-                                <p>Cena: <?php echo number_format($course['cena'], 2); ?> PLN</p>
-                            </div>
-                            <div class="course-actions">
-                                <button class="btn-edit" onclick="editCourse(<?php echo htmlspecialchars(json_encode($course)); ?>)">Edytuj</button>
-                                <form method="POST" style="display: inline;" onsubmit="return confirm('Czy na pewno chcesz usunąć ten kurs?');">
-                                    <input type="hidden" name="action" value="delete">
-                                    <input type="hidden" name="id" value="<?php echo $course['id']; ?>">
-                                    <button type="submit" class="btn-delete">Usuń</button>
-                                </form>
-                            </div>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
+                <?php if (empty($courses)): ?>
+                    <p>Brak dostępnych kursów.</p>
+                <?php else: ?>
+                    <ul class="course-list">
+                        <?php foreach ($courses as $course): ?>
+                            <li class="course-item">
+                                <div class="course-info">
+                                    <h3><?php echo htmlspecialchars($course['nazwa']); ?></h3>
+                                    <p>Kategoria: <?php echo htmlspecialchars($course['kategoria']); ?></p>
+                                    <p>Cena: <?php echo number_format($course['cena'], 2); ?> PLN</p>
+                                    <?php if (!empty($course['opis'])): ?>
+                                        <p class="course-description"><?php echo htmlspecialchars($course['opis']); ?></p>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="course-actions">
+                                    <button class="btn-edit" onclick="editCourse(<?php echo htmlspecialchars(json_encode($course)); ?>)">Edytuj</button>
+                                    <form method="POST" style="display: inline;" onsubmit="return confirm('Czy na pewno chcesz usunąć ten kurs?');">
+                                        <input type="hidden" name="action" value="delete">
+                                        <input type="hidden" name="id" value="<?php echo $course['id']; ?>">
+                                        <button type="submit" class="btn-delete">Usuń</button>
+                                    </form>
+                                </div>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
             </div>
 
             <div class="admin-section">
@@ -239,26 +308,27 @@ $courses = $result->fetch_all(MYSQLI_ASSOC);
                     </div>
                     
                     <div class="form-group">
+                        <label for="cena">Cena (PLN)</label>
+                        <input type="number" id="cena" name="cena" step="0.01" min="0" required>
+                    </div>
+                    
+                    <div class="form-group">
                         <label for="kategoria">Kategoria</label>
                         <select id="kategoria" name="kategoria" required>
-                            <option value="A">Kategoria A</option>
-                            <option value="B">Kategoria B</option>
-                            <option value="C">Kategoria C</option>
-                            <option value="D">Kategoria D</option>
+                            <option value="A">Kategoria A - Motocykle</option>
+                            <option value="B">Kategoria B - Samochody osobowe</option>
+                            <option value="C">Kategoria C - Samochody ciężarowe</option>
+                            <option value="D">Kategoria D - Autobusy</option>
+                            <option value="inne">Inne</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
-                        <label for="cena">Cena (PLN)</label>
-                        <input type="number" id="cena" name="cena" step="0.01" required>
+                        <label for="opis">Opis kursu</label>
+                        <textarea id="opis" name="opis" rows="4"></textarea>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="opis">Opis</label>
-                        <textarea id="opis" name="opis" required></textarea>
-                    </div>
-                    
-                    <button type="submit" class="btn-submit">Zapisz kurs</button>
+                    <button type="submit" class="btn-submit" id="submitBtn">Dodaj kurs</button>
                 </form>
             </div>
         </div>
@@ -269,19 +339,23 @@ $courses = $result->fetch_all(MYSQLI_ASSOC);
             document.getElementById('formAction').value = 'edit';
             document.getElementById('courseId').value = course.id;
             document.getElementById('nazwa').value = course.nazwa;
-            document.getElementById('kategoria').value = course.kategoria;
             document.getElementById('cena').value = course.cena;
+            document.getElementById('kategoria').value = course.kategoria;
             document.getElementById('opis').value = course.opis;
+            document.getElementById('submitBtn').textContent = 'Zapisz zmiany';
             
             // Scroll to form
-            document.querySelector('.admin-section:last-child').scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('courseForm').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Reset form when clicking "Add new" button
-        document.querySelector('.btn-submit').addEventListener('click', function(e) {
-            if (document.getElementById('formAction').value === 'add') {
+        // Reset form after submission
+        document.getElementById('courseForm').addEventListener('submit', function() {
+            setTimeout(function() {
+                document.getElementById('formAction').value = 'add';
+                document.getElementById('courseId').value = '';
                 document.getElementById('courseForm').reset();
-            }
+                document.getElementById('submitBtn').textContent = 'Dodaj kurs';
+            }, 100);
         });
     </script>
 </body>

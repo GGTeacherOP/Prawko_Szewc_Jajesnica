@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Check if payment type and ID are provided
-if (!isset($_GET['typ']) || (!isset($_GET['kurs_id']) && !isset($_GET['badanie_id']))) {
+if (!isset($_GET['typ']) || (!isset($_GET['kurs_id']) && !isset($_GET['id']))) {
     $_SESSION['error_message'] = "Nie określono typu płatności.";
     header("Location: dashboard.php");
     exit();
@@ -23,11 +23,11 @@ try {
 
     if ($payment_type === 'badanie') {
         // Handle medical examination payment
-        if (!isset($_GET['badanie_id'])) {
+        if (!isset($_GET['id'])) {
             throw new Exception("Nie określono badania.");
         }
         
-        $badanie_id = $_GET['badanie_id'];
+        $badanie_id = $_GET['id'];
         
         // Get examination details
         $stmt = $conn->prepare("SELECT * FROM badania WHERE id = ? AND uzytkownik_id = ?");

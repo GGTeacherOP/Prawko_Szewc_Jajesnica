@@ -22,6 +22,18 @@ $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 $stmt->close();
 
+// Debug user data
+error_log("User ID: " . $user_id);
+error_log("User data: " . print_r($user, true));
+
+// If user not found, redirect to login
+if (!$user) {
+    error_log("User not found in database. User ID: " . $user_id);
+    session_destroy();
+    header("Location: login.php");
+    exit();
+}
+
 // Get user's courses with payment status
 $courses_query = "SELECT 
     k.*,
@@ -31,9 +43,9 @@ $courses_query = "SELECT
     p.status as payment_status,
     p.kwota as payment_amount,
     p.data_platnosci as payment_date
-FROM kursy k 
-JOIN zapisy z ON k.id = z.kurs_id 
-LEFT JOIN platnosci p ON k.id = p.kurs_id AND p.uzytkownik_id = z.uzytkownik_id
+FROM zapisy z 
+JOIN kursy k ON k.id = z.kurs_id 
+LEFT JOIN platnosci p ON p.kurs_id = k.id AND p.uzytkownik_id = z.uzytkownik_id
 WHERE z.uzytkownik_id = ?
 ORDER BY z.id DESC";
 $stmt = $conn->prepare($courses_query);
@@ -314,13 +326,13 @@ if ($latest_examination) {
             <div class="info-grid">
                 <div>
                     <h3>Dane osobowe</h3>
-                    <p><strong>Imię i nazwisko:</strong> <?php echo htmlspecialchars($user['imie'] . ' ' . $user['nazwisko']); ?></p>
-                    <p><strong>Email:</strong> <?php echo htmlspecialchars($user['email']); ?></p>
-                    <p><strong>Telefon:</strong> <?php echo htmlspecialchars($user['telefon']); ?></p>
+                    <p><strong>Imię i nazwisko:</strong> <?php echo isset($user['imie']) && isset($user['nazwisko']) ? htmlspecialchars($user['imie'] . ' ' . $user['nazwisko']) : 'Brak danych'; ?></p>
+                    <p><strong>Email:</strong> <?php echo isset($user['email']) ? htmlspecialchars($user['email']) : 'Brak danych'; ?></p>
+                    <p><strong>Telefon:</strong> <?php echo isset($user['telefon']) ? htmlspecialchars($user['telefon']) : 'Brak danych'; ?></p>
                 </div>
                 <div>
                     <h3>Uprawnienia</h3>
-                    <p><strong>Kategoria:</strong> <?php echo htmlspecialchars($user['kategoria_prawa_jazdy']); ?></p>
+                    <p><strong>Kategoria:</strong> <?php echo isset($user['kategoria_prawa_jazdy']) ? htmlspecialchars($user['kategoria_prawa_jazdy']) : 'Brak danych'; ?></p>
                     <p><strong>Status badań:</strong> 
                         <?php if ($has_valid_medical): ?>
                             <span class="status pozytywny">Aktualne</span>
@@ -360,7 +372,7 @@ if ($latest_examination) {
                     </div>
                     <div class="action-buttons">
                         <?php if ($course['payment_status'] !== 'Opłacony'): ?>
-                            <a href="platnosci.php?kurs_id=<?php echo $course['id']; ?>" class="btn btn-primary small">Opłać kurs</a>
+                            <a href="platnosci.php?typ=kurs&kurs_id=<?php echo $course['id']; ?>" class="btn btn-primary small">Opłać kurs</a>
                         <?php endif; ?>
                         <?php if ($course['payment_status'] === 'Opłacony'): ?>
                             <a href="moje_jazdy.php" class="btn btn-primary small">Moje jazdy</a>
@@ -418,7 +430,7 @@ if ($latest_examination) {
                 </div>
                 <div class="examination-actions">
                     <?php if ($status_class === 'oczekujacy'): ?>
-                        <a href="platnosci.php?typ=badanie&badanie_id=<?php echo $latest_examination['id']; ?>" class="btn btn-primary">Opłać badanie</a>
+                        <a href="platnosci.php?typ=badanie&id=<?php echo $latest_examination['id']; ?>" class="btn btn-primary">Opłać badanie</a>
                     <?php endif; ?>
                 </div>
             </div>

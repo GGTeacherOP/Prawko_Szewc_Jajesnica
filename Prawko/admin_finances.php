@@ -8,6 +8,50 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['rola']) || $_SESSION['rola
     exit();
 }
 
+// Handle payment approval
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'approve') {
+    $payment_id = $_POST['id'];
+    
+    try {
+        // Start transaction
+        $conn->begin_transaction();
+        
+        // Update payment status
+        $stmt = $conn->prepare("UPDATE platnosci SET status = 'Opłacony' WHERE id = ?");
+        $stmt->bind_param("i", $payment_id);
+        $stmt->execute();
+        
+        // If this is a course payment, update the course enrollment status
+        $stmt = $conn->prepare("
+            SELECT kurs_id, uzytkownik_id 
+            FROM platnosci 
+            WHERE id = ? AND kurs_id IS NOT NULL
+        ");
+        $stmt->bind_param("i", $payment_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows > 0) {
+            $payment_data = $result->fetch_assoc();
+            $stmt = $conn->prepare("
+                UPDATE zapisy 
+                SET status = 'Aktywny' 
+                WHERE kurs_id = ? AND uzytkownik_id = ?
+            ");
+            $stmt->bind_param("ii", $payment_data['kurs_id'], $payment_data['uzytkownik_id']);
+            $stmt->execute();
+        }
+        
+        $conn->commit();
+        header("Location: admin_finances.php?success=1");
+        exit();
+    } catch (Exception $e) {
+        $conn->rollback();
+        header("Location: admin_finances.php?error=1");
+        exit();
+    }
+}
+
 // Get financial statistics
 $stats = array();
 
@@ -206,6 +250,18 @@ $pending_payments = $result->fetch_all(MYSQLI_ASSOC);
             <h1>Zarządzanie finansami</h1>
             <a href="admin_panel.php" class="btn">Powrót do panelu</a>
         </div>
+
+        <?php if (isset($_GET['success'])): ?>
+            <div class="alert alert-success">
+                Płatność została pomyślnie zatwierdzona.
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($_GET['error'])): ?>
+            <div class="alert alert-danger">
+                Wystąpił błąd podczas zatwierdzania płatności. Spróbuj ponownie.
+            </div>
+        <?php endif; ?>
 
         <div class="stats-grid">
             <div class="stat-card">
