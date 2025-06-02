@@ -64,32 +64,49 @@ try {
         }
     }
 
+    error_log("No user found in uzytkownicy table, checking pracownicy table...");
+
     // If no user found, try employees table
-    $stmt = $conn->prepare("SELECT * FROM pracownicy WHERE email = ? AND haslo = ?");
+    $stmt = $conn->prepare("SELECT * FROM pracownicy WHERE email = ?");
     if (!$stmt) {
         die("Błąd SQL (pracownicy): " . $conn->error);
     }
-    $stmt->bind_param("ss", $login, $haslo);
+    $stmt->bind_param("s", $login);
     $stmt->execute();
     $result = $stmt->get_result();
 
+    error_log("Found " . $result->num_rows . " employees with this email");
+
     if ($result->num_rows === 1) {
         $pracownik = $result->fetch_assoc();
-        $_SESSION['user_id'] = $pracownik['id'];
-        $_SESSION['rola'] = $pracownik['rola'];
-        $_SESSION['imie'] = $pracownik['imie'];
+        error_log("Employee found: " . print_r($pracownik, true));
         
-        // Redirect to appropriate panel
-        if ($pracownik['rola'] === 'instruktor') {
-            header("Location: panel_instruktora.php");
-        } elseif ($pracownik['rola'] === 'ksiegowy') {
-            header("Location: panel_ksiegowy.php");
-        } elseif ($pracownik['rola'] === 'admin') {
-            header("Location: admin_panel.php");
+        if ($pracownik['haslo'] === $haslo) {
+            error_log("Password matches, setting session variables");
+            $_SESSION['user_id'] = $pracownik['id'];
+            $_SESSION['rola'] = $pracownik['rola'];
+            $_SESSION['imie'] = $pracownik['imie'];
+            
+            error_log("Role: " . $pracownik['rola']);
+            
+            // Redirect to appropriate panel
+            if ($pracownik['rola'] === 'instruktor') {
+                header("Location: panel_instruktora.php");
+            } elseif ($pracownik['rola'] === 'ksiegowy') {
+                header("Location: panel_ksiegowy.php");
+            } elseif ($pracownik['rola'] === 'admin') {
+                header("Location: admin_panel.php");
+            } elseif ($pracownik['rola'] === 'wlasciciel') {
+                header("Location: panel_wlasciciela.php");
+            } else {
+                header("Location: index.php");
+            }
+            exit();
         } else {
-            header("Location: index.php");
+            error_log("Password does not match");
         }
-        exit();
+    } else {
+        error_log("No employee found with this email");
     }
 
     // If no user or employee found

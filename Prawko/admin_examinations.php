@@ -50,12 +50,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Get all examinations with user information
 $result = $conn->query("
     SELECT b.*, 
-           COALESCE(COUNT(p.id), 0) as zapisane_osoby,
-           GROUP_CONCAT(CONCAT(u.imie, ' ', u.nazwisko) SEPARATOR ', ') as uczestnicy
+           u.imie,
+           u.nazwisko
     FROM badania b
-    LEFT JOIN platnosci p ON b.id = p.badanie_id
-    LEFT JOIN uzytkownicy u ON p.uzytkownik_id = u.id
-    GROUP BY b.id
+    LEFT JOIN uzytkownicy u ON b.uzytkownik_id = u.id
     ORDER BY b.data_badania DESC
 ");
 $examinations = $result->fetch_all(MYSQLI_ASSOC);
@@ -233,18 +231,15 @@ $examinations = $result->fetch_all(MYSQLI_ASSOC);
                                 <div class="examination-info">
                                     <h3>
                                         Badanie <?php echo htmlspecialchars($exam['typ']); ?>
-                                        <span class="<?php echo $exam['zapisane_osoby'] >= 10 ? 'status-full' : 'status-available'; ?>">
-                                            (<?php echo $exam['zapisane_osoby']; ?>/10 osób)
-                                        </span>
+                                        <?php if ($exam['imie'] && $exam['nazwisko']): ?>
+                                            - <?php echo htmlspecialchars($exam['imie'] . ' ' . $exam['nazwisko']); ?>
+                                        <?php endif; ?>
                                     </h3>
                                     <p>Data: <?php echo date('d.m.Y', strtotime($exam['data_badania'])); ?></p>
                                     <p>Typ: <?php echo htmlspecialchars($exam['typ']); ?></p>
                                     <p>Wynik: <?php echo htmlspecialchars($exam['wynik']); ?></p>
                                     <p>Status: <?php echo htmlspecialchars($exam['status']); ?></p>
                                     <p>Ważność do: <?php echo date('d.m.Y', strtotime($exam['waznosc_do'])); ?></p>
-                                    <?php if ($exam['uczestnicy']): ?>
-                                        <p>Zapisani: <?php echo htmlspecialchars($exam['uczestnicy']); ?></p>
-                                    <?php endif; ?>
                                 </div>
                                 <div class="examination-actions">
                                     <button class="btn-edit" onclick="editExamination(<?php echo htmlspecialchars(json_encode($exam)); ?>)">Edytuj</button>

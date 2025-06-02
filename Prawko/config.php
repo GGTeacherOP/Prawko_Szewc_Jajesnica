@@ -1,4 +1,16 @@
 <?php
+// Start session and clean it up if it's a new visit
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+if (!isset($_SESSION['last_activity'])) {
+    // This is a new visit, destroy any existing session
+    session_unset();
+    session_destroy();
+    session_start();
+}
+$_SESSION['last_activity'] = time();
+
 // Database configuration
 $host = 'localhost';
 $db_username = 'root';
@@ -58,7 +70,7 @@ function createTables($conn) {
         telefon VARCHAR(20) NOT NULL,
         haslo VARCHAR(255) NOT NULL,
         kategorie_uprawnien SET('A', 'B', 'C', 'D') NOT NULL,
-        rola ENUM('instruktor', 'ksiegowy', 'admin') NOT NULL DEFAULT 'instruktor'
+        rola ENUM('instruktor', 'ksiegowy', 'admin', 'wlasciciel') NOT NULL DEFAULT 'instruktor'
     )";
 
     // Pojazdy table

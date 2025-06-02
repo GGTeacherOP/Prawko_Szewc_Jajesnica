@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS pracownicy (
     telefon VARCHAR(20) NOT NULL,
     haslo VARCHAR(255) NOT NULL,
     kategorie_uprawnien SET('A', 'B', 'C', 'D') NOT NULL,
-    rola ENUM('instruktor', 'ksiegowy', 'admin') NOT NULL DEFAULT 'instruktor'
+    rola ENUM('instruktor', 'ksiegowy', 'admin', 'wlasciciel') NOT NULL DEFAULT 'instruktor'
 );
 
 -- Tabela kursów
@@ -179,7 +179,8 @@ INSERT INTO pracownicy (imie, nazwisko, email, telefon, haslo, kategorie_uprawni
 ('Adam', 'Admin', 'admin@firma.pl', '987654321', 'admin123', '', 'admin'),
 ('Marek', 'Kowalczyk', 'marek.kowalczyk@szkola.pl', '111333555', 'instruktor1', 'A,B', 'instruktor'),
 ('Barbara', 'Wojcik', 'barbara.wojcik@szkola.pl', '222444666', 'instruktor2', 'B,C', 'instruktor'),
-('Krzysztof', 'Nowicki', 'krzysztof.nowicki@szkola.pl', '333555777', 'instruktor3', 'A,B,C,D', 'instruktor');
+('Krzysztof', 'Nowicki', 'krzysztof.nowicki@szkola.pl', '333555777', 'instruktor3', 'A,B,C,D', 'instruktor'),
+('Właściciel', 'Szkoły', 'wlasciciel@szkola.pl', '999888777', '123', '', 'wlasciciel');
 
 -- Przykładowe kursy
 INSERT INTO kursy (nazwa, kategoria, opis, cena) VALUES

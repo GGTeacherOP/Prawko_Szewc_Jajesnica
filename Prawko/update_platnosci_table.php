@@ -2,13 +2,13 @@
 require_once 'config.php';
 
 try {
-    // First check if the column already exists
+    // Check if badanie_id column exists
     $check_sql = "SHOW COLUMNS FROM platnosci LIKE 'badanie_id'";
     $result = $conn->query($check_sql);
     
     if ($result->num_rows == 0) {
-        // Column doesn't exist, add it
-        $sql = "ALTER TABLE platnosci
+        // Add badanie_id column
+        $sql = "ALTER TABLE platnosci 
                 ADD COLUMN badanie_id INT(11) NULL";
         
         if (!$conn->query($sql)) {
@@ -19,22 +19,22 @@ try {
         echo "badanie_id column already exists.<br>";
     }
 
-    // Now add the foreign key constraint
-    $check_fk_sql = "SELECT * FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE 
-                     WHERE TABLE_SCHEMA = 'szkolajazdy' 
-                     AND TABLE_NAME = 'platnosci' 
-                     AND COLUMN_NAME = 'badanie_id' 
+    // Check if foreign key exists
+    $check_fk_sql = "SELECT * FROM information_schema.KEY_COLUMN_USAGE 
+                     WHERE TABLE_SCHEMA = DATABASE()
+                     AND TABLE_NAME = 'platnosci'
+                     AND COLUMN_NAME = 'badanie_id'
                      AND REFERENCED_TABLE_NAME = 'badania'";
     
     $result = $conn->query($check_fk_sql);
     
     if ($result->num_rows == 0) {
-        $fk_sql = "ALTER TABLE platnosci
-                   ADD CONSTRAINT fk_platnosci_badania
-                   FOREIGN KEY (badanie_id) REFERENCES badania(id)";
+        // Add foreign key
+        $sql = "ALTER TABLE platnosci 
+                ADD FOREIGN KEY (badanie_id) REFERENCES badania(id)";
         
-        if (!$conn->query($fk_sql)) {
-            throw new Exception("Error adding foreign key constraint: " . $conn->error);
+        if (!$conn->query($sql)) {
+            throw new Exception("Error adding foreign key: " . $conn->error);
         }
         echo "Successfully added foreign key constraint.<br>";
     } else {
